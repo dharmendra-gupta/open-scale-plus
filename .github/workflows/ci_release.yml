@@ -58,7 +58,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: openscale-plus-release-${{ github.run_number }}
-          path: app/build/outputs/apk/release/*.apk
+          path: android_app/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
       # Creates a rolling "latest" dev build on every master push (not a tag)
