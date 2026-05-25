@@ -56,7 +56,19 @@ android {
                 keyPassword = keystoreProperties.getProperty("releaseKeyPassword")
                 storePassword = keystoreProperties.getProperty("releaseStorePassword")
             } else {
-                project.logger.warn("Release signing information not fully loaded from properties. Ensure it's set via environment variables or the properties file is correct.")
+                // Fall back to environment variables for CI/CD
+                val envKeystore = System.getenv("KEYSTORE_PATH")
+                val envAlias = System.getenv("KEY_ALIAS")
+                val envKeyPassword = System.getenv("KEY_PASSWORD")
+                val envStorePassword = System.getenv("KEYSTORE_PASSWORD")
+                if (envKeystore != null && envAlias != null) {
+                    storeFile = file(envKeystore)
+                    keyAlias = envAlias
+                    keyPassword = envKeyPassword
+                    storePassword = envStorePassword
+                } else {
+                    project.logger.warn("Release signing information not fully loaded from properties. Ensure it's set via environment variables or the properties file is correct.")
+                }
             }
         }
 
@@ -106,16 +118,6 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-        }
-
-        create("beta") {
-            initWith(getByName("debug"))
-            signingConfig = signingConfigs.getByName("debug")
-            applicationIdSuffix = ".beta"
-            versionNameSuffix = "-beta"
-            manifestPlaceholders["appName"] = "openScale beta"
-            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_beta"
-            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_beta_round"
         }
 
         create("oss") {
