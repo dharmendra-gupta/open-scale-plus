@@ -40,7 +40,9 @@ jobs:
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/openscale-plus.jks
 
       - name: Verify keystore
-        run: keytool -list -keystore $RUNNER_TEMP/openscale-plus.jks -storepass "${{ secrets.KEYSTORE_PASSWORD }}"
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASSWORD }}
+        run: keytool -list -keystore $RUNNER_TEMP/openscale-plus.jks -storepass "$KEYSTORE_PASS"
 
       - name: Build & sign release APK
         env:
