@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - master
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
@@ -38,7 +40,7 @@ jobs:
         run: echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > $RUNNER_TEMP/openscale-plus.jks
 
       - name: Verify keystore
-        run: keytool -list -keystore $RUNNER_TEMP/openscale-plus.jks -storepass "${{ secrets.KEYSTORE_PASSWORD }}" -alias "${{ secrets.KEY_ALIAS }}"
+        run: keytool -list -keystore $RUNNER_TEMP/openscale-plus.jks -storepass "${{ secrets.KEYSTORE_PASSWORD }}"
 
       - name: Build & sign release APK
         env:
@@ -55,12 +57,24 @@ jobs:
           path: app/build/outputs/apk/release/*.apk
           retention-days: 30
 
-      - name: Create GitHub release (master branch only)
+      # Creates a rolling "latest" dev build on every master push (not a tag)
+      - name: Create dev release
         if: github.ref == 'refs/heads/master'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: latest
+          automatic_release_tag: dev-latest
+          prerelease: true
+          title: openScale+ Dev Build
+          files: android_app/app/build/outputs/apk/release/*.apk
+
+      # Creates a proper versioned release when a tag like v1.0.0 is pushed
+      - name: Create versioned release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: marvinpinto/action-automatic-releases@latest
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          automatic_release_tag: ${{ github.ref_name }}
           prerelease: false
-          title: openScale+ Latest
+          title: openScale+ ${{ github.ref_name }}
           files: android_app/app/build/outputs/apk/release/*.apk
