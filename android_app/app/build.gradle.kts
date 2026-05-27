@@ -72,28 +72,39 @@ android {
             }
         }
 
-        create("oss") {
-            val keystoreOSSPropertiesFile = rootProject.file("../../openScale_oss.keystore")
-            val keystoreOSSProperties = Properties()
+        create("beta") {
+            val keystoreBetaPropertiesFile = rootProject.file("../../openScale_beta.keystore")
+            val keystoreBetaProperties = Properties()
             var propertiesLoaded : Boolean
 
             try {
-                FileInputStream(keystoreOSSPropertiesFile).use { fis ->
-                    keystoreOSSProperties.load(fis)
+                FileInputStream(keystoreBetaPropertiesFile).use { fis ->
+                    keystoreBetaProperties.load(fis)
                 }
                 propertiesLoaded = true
             } catch (e: FileNotFoundException) {
-                project.logger.warn("OSS Keystore properties file not found: ${keystoreOSSPropertiesFile.absolutePath}. OSS signing might fail if not configured via environment variables.")
+                project.logger.warn("Beta keystore properties file not found: ${keystoreBetaPropertiesFile.absolutePath}. Falling back to environment variables.")
                 propertiesLoaded = false
             }
 
-            if (propertiesLoaded && keystoreOSSProperties.containsKey("releaseKeyStore")) {
-                storeFile = file(rootProject.projectDir.canonicalPath + "/" + keystoreOSSProperties.getProperty("releaseKeyStore"))
-                keyAlias = keystoreOSSProperties.getProperty("releaseKeyAlias")
-                keyPassword = keystoreOSSProperties.getProperty("releaseKeyPassword")
-                storePassword = keystoreOSSProperties.getProperty("releaseStorePassword")
+            if (propertiesLoaded && keystoreBetaProperties.containsKey("releaseKeyStore")) {
+                storeFile = file(rootProject.projectDir.canonicalPath + "/" + keystoreBetaProperties.getProperty("releaseKeyStore"))
+                keyAlias = keystoreBetaProperties.getProperty("releaseKeyAlias")
+                keyPassword = keystoreBetaProperties.getProperty("releaseKeyPassword")
+                storePassword = keystoreBetaProperties.getProperty("releaseStorePassword")
             } else {
-                project.logger.warn("OSS signing information not fully loaded from properties. Ensure it's set via environment variables or the properties file is correct.")
+                val envKeystore = System.getenv("KEYSTORE_PATH")
+                val envAlias = System.getenv("KEY_ALIAS")
+                val envKeyPassword = System.getenv("KEY_PASSWORD")
+                val envStorePassword = System.getenv("KEYSTORE_PASSWORD")
+                if (envKeystore != null && envAlias != null) {
+                    storeFile = file(envKeystore)
+                    keyAlias = envAlias
+                    keyPassword = envKeyPassword
+                    storePassword = envStorePassword
+                } else {
+                    project.logger.warn("Beta signing information not fully loaded. Ensure it's set via environment variables or the properties file is correct.")
+                }
             }
         }
     }
@@ -120,11 +131,11 @@ android {
             )
         }
 
-        create("oss") {
+        create("beta") {
             initWith(getByName("release"))
-            signingConfig = signingConfigs.getByName("oss")
-            applicationIdSuffix = ".oss"
-            versionNameSuffix = "-oss"
+            signingConfig = signingConfigs.getByName("beta")
+            applicationIdSuffix = ".beta"
+            versionNameSuffix = "-beta"
             manifestPlaceholders["appName"] = "openScale"
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_beta"
             manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_beta_round"
@@ -157,6 +168,10 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
     }
 
     lint {
@@ -229,6 +244,12 @@ dependencies {
 
     // BouncyCastle for AES-CCM decryption (Xiaomi S400 scale)
     implementation(libs.bouncycastle)
+
+    // OkHttp for webhook sync
+    implementation(libs.okhttp)
+    testImplementation(libs.okhttp.mockwebserver)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.orgjson)
 
     // Test dependencies
     testImplementation(libs.junit)

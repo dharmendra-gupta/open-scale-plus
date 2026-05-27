@@ -1,0 +1,29 @@
+name: Pull Request CI
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  test:
+    name: Run Unit Tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: android_app
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Run Unit Tests
+        run: ./gradlew testDebugUnitTest
