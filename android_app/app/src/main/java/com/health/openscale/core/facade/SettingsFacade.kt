@@ -157,7 +157,7 @@ interface SettingsBindsModule {
 /**
  * Repository interface for accessing and managing user settings.
  */
-interface SettingsFacade {
+interface SettingsFacade : com.health.openscale.core.sync.webhook.WebhookSettings {
     // General app settings
     val isFileLoggingEnabled: Flow<Boolean>
     suspend fun setFileLoggingEnabled(enabled: Boolean)
@@ -615,6 +615,15 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setAutoConnectOnStartup(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name, enabled)
     }
+
+    override fun webhookUrl(userId: Int): Flow<String> = observeSetting("webhook_url_user_$userId", "")
+    override suspend fun setWebhookUrl(userId: Int, url: String) = saveSetting("webhook_url_user_$userId", url)
+
+    override fun webhookAuthHeaders(userId: Int): Flow<String> = observeSetting("webhook_auth_headers_user_$userId", "")
+    override suspend fun setWebhookAuthHeaders(userId: Int, json: String) = saveSetting("webhook_auth_headers_user_$userId", json)
+
+    override fun webhookPayloadSchema(userId: Int): Flow<String> = observeSetting("webhook_payload_schema_user_$userId", "")
+    override suspend fun setWebhookPayloadSchema(userId: Int, json: String) = saveSetting("webhook_payload_schema_user_$userId", json)
 
     override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(
         SettingsPreferenceKeys.SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED.name,

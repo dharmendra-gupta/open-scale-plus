@@ -1,6 +1,7 @@
 /*
  * openScale
  * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ * Copyright (C) 2026 openScale+ Dharmendra Gupta
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -124,6 +125,8 @@ import com.health.openscale.ui.screen.settings.AboutScreen
 import com.health.openscale.ui.screen.settings.BluetoothDetailScreen
 import com.health.openscale.ui.screen.settings.BluetoothScreen
 import com.health.openscale.ui.screen.settings.ChartSettingsScreen
+import com.health.openscale.ui.screen.settings.CloudSyncSettingsScreen
+import com.health.openscale.ui.screen.sync.CloudSyncScreen
 import com.health.openscale.ui.screen.settings.DataManagementSettingsScreen
 import com.health.openscale.ui.screen.settings.GeneralSettingsScreen
 import com.health.openscale.ui.screen.settings.MeasurementTypeDetailScreen
@@ -177,6 +180,7 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
         Routes.TABLE,
         Routes.STATISTICS,
         Routes.INSIGHTS,
+        Routes.CLOUD_SYNC,
         Routes.SETTINGS
     )
 
@@ -794,6 +798,18 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         DataManagementSettingsScreen(
                             navController = navController,
                             settingsViewModel = settingsViewModel
+                        )
+                    }
+                    composable(Routes.CLOUD_SYNC) {
+                        CloudSyncScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                        )
+                    }
+                    composable(Routes.WEBHOOK_SETTINGS) {
+                        CloudSyncSettingsScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
                         )
                     }
                     composable(Routes.ABOUT_SETTINGS) {

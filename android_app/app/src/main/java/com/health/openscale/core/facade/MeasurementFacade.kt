@@ -1,6 +1,7 @@
 /*
  * openScale
  * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ * Copyright (C) 2026 openScale+ Dharmendra Gupta
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,12 +41,14 @@ import com.health.openscale.core.usecase.MeasurementInsightsUseCase
 import com.health.openscale.core.usecase.MeasurementQueryUseCases
 import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
 import com.health.openscale.core.usecase.MeasurementTransformationUseCase
+import com.health.openscale.core.sync.webhook.WebhookSyncManager
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -79,6 +82,7 @@ class MeasurementFacade @Inject constructor(
     private val aggregation: MeasurementAggregationUseCase,
     private val insights: MeasurementInsightsUseCase,
     private val demoUseCase: MeasurementDemoUseCase,
+    private val webhookSyncManager: WebhookSyncManager,
     ) {
 
     private var pendingReferenceUser: User? = null
@@ -230,10 +234,16 @@ class MeasurementFacade @Inject constructor(
         val ref = pendingReferenceUser
         if (ref != null) {
             val finalValues = transformation.applyAssistedWeighing(measurement, values, ref)
-            crud.saveMeasurement(measurement, finalValues)
+            crud.saveMeasurement(measurement, finalValues).onSuccess { id ->
+                fireWebhookAfterSave(id, null)
+            }
         } else {
             val finalMeasurement = transformation.applySmartUserAssignment(measurement, values)
-            if (finalMeasurement != null) crud.saveMeasurement(finalMeasurement, values)
+            if (finalMeasurement != null) {
+                crud.saveMeasurement(finalMeasurement, values).onSuccess { id ->
+                    fireWebhookAfterSave(id, null)
+                }
+            }
         }
     }
 
@@ -248,7 +258,17 @@ class MeasurementFacade @Inject constructor(
     suspend fun saveMeasurement(
         measurement: Measurement,
         values: List<MeasurementValue>,
-    ) = crud.saveMeasurement(measurement, values)
+        onWebhookError: ((String) -> Unit)? = null,
+    ): Result<Int> {
+        val result = crud.saveMeasurement(measurement, values)
+        result.onSuccess { id -> fireWebhookAfterSave(id, onWebhookError) }
+        return result
+    }
+
+    private suspend fun fireWebhookAfterSave(savedId: Int, onWebhookError: ((String) -> Unit)?) {
+        val saved = query.getMeasurementWithValuesById(savedId).first()
+        if (saved != null) webhookSyncManager.fireAndForget(saved, onWebhookError)
+    }
 
     suspend fun deleteMeasurement(measurement: Measurement) =
         crud.deleteMeasurement(measurement)

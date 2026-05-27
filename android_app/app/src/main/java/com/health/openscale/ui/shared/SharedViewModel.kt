@@ -1,6 +1,7 @@
 /*
  * openScale
  * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ * Copyright (C) 2026 openScale+ Dharmendra Gupta
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -675,7 +676,9 @@ class SharedViewModel @Inject constructor(
         values: List<MeasurementValue>,
         silent: Boolean = false,
     ): Boolean = withContext(Dispatchers.IO) {
-        val result = measurementFacade.saveMeasurement(measurement, values)
+        val result = measurementFacade.saveMeasurement(measurement, values) { error ->
+            showSnackbar(message = "Webhook failed: $error")
+        }
         if (result.isSuccess) {
             if (!silent) showSnackbar(
                 messageResId = if (measurement.id == 0) R.string.success_measurement_saved
