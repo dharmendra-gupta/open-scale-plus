@@ -44,6 +44,7 @@
     <string name="route_title_statistics">Statistics</string>
     <string name="route_title_insights">Insights</string>
     <string name="route_title_settings">Settings</string>
+    <string name="route_title_cloud_sync">Cloud Sync</string>
     <string name="route_title_table_drilldown">Details</string>
     <string name="calendar_week_abbrev">CW</string>
     <string name="title_new_measurement">New Measurement</string>
@@ -569,6 +570,7 @@
     <string name="settings_item_bluetooth">Bluetooth</string>
     <string name="settings_item_chart">Chart</string>
     <string name="settings_item_data_management">Data Management</string>
+    <string name="settings_item_cloud_sync">Cloud Sync</string>
     <string name="settings_item_about">About</string>
 
     <!-- General Settings Screen -->
@@ -591,6 +593,35 @@
     <string name="settings_high_contrast_label">High contrast</string>
     <string name="settings_show_overview_chart">Show chart on overview</string>
     <string name="settings_chart_scrollable">Scrollable chart</string>
+
+    <!-- Cloud Sync Settings Screen -->
+    <string name="settings_cloud_sync_title">Cloud Sync</string>
+    <string name="settings_cloud_sync_webhook_section">Webhook</string>
+    <string name="settings_cloud_sync_url_label">Webhook URL</string>
+    <string name="settings_cloud_sync_auth_headers_label">Auth Headers (JSON, optional)</string>
+    <string name="settings_cloud_sync_schema_label">Payload Schema (JSON)</string>
+    <string name="settings_cloud_sync_validate_button">Validate schema mapping</string>
+    <string name="settings_cloud_sync_schema_valid">✓ All tokens are valid</string>
+    <string name="settings_cloud_sync_schema_error">Unknown token \'%1$s\' at %2$s</string>
+    <string name="settings_cloud_sync_schema_invalid_pattern">Invalid pattern \'%1$s\' at %2$s</string>
+    <string name="settings_cloud_sync_schema_hardcoded_number">Hardcoded value \'%1$s\' at \'%2$s\' — use a token like WEIGHT to send live measurement data</string>
+    <string name="settings_cloud_sync_schema_looks_like_format">\'%1$s\' at \'%2$s\' looks like a format pattern — did you mean TIME_%1$s or DATE_%1$s?</string>
+
+    <!-- Cloud Sync provider picker -->
+    <string name="cloud_sync_section_available">Available</string>
+    <string name="cloud_sync_section_coming_soon">Coming soon</string>
+    <string name="cloud_sync_coming_soon">Coming soon</string>
+    <string name="cloud_sync_webhook_title">Custom Webhook</string>
+    <string name="cloud_sync_webhook_desc">Send measurement data to any HTTP endpoint after every save</string>
+    <string name="cloud_sync_hevy_title">Hevy</string>
+    <string name="cloud_sync_hevy_desc">Sync body composition with your Hevy workout log</string>
+    <string name="cloud_sync_strava_title">Strava</string>
+    <string name="cloud_sync_strava_desc">Share weight and body composition with Strava</string>
+    <string name="cloud_sync_health_connect_title">Google Health Connect</string>
+    <string name="cloud_sync_health_connect_desc">Sync with Android Health Connect</string>
+    <string name="settings_cloud_sync_save_button">Save</string>
+    <string name="settings_cloud_sync_tokens_title">Supported tokens</string>
+    <string name="settings_cloud_sync_tokens_body">WEIGHT · FAT · WATER · BONE · LBM · BMI · MUSCLE · VISCERAL_FAT · DATE · TIME · TIMESTAMP · TIMEZONE\n\nCustom date/time formats: DATE_yyyy-MM-dd · TIME_HH:mm:ss\nTimezone formats: TIMEZONE_xxx (+05:30) · TIMEZONE_xx (+0530) · TIMEZONE_OOOO (GMT+05:30) · TIMEZONE_X (Z or +0530) · TIMEZONE_VV (America/New_York)\n\nUnknown tokens resolve to null. Literal string values are passed through unchanged.\n\nNote: validation flags all-uppercase values (e.g. "SUCCESS") as unknown tokens. Use lowercase or mixed-case for literal strings to avoid false-positive warnings.</string>
 
     <string name="monday_short">Mon</string>
     <string name="tuesday_short">Tue</string>
