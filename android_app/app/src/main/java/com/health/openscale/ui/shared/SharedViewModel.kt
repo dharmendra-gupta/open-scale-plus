@@ -45,6 +45,8 @@ import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
+import com.health.openscale.core.sync.dryrun.SyncDryRunMode
+import com.health.openscale.core.sync.strava.StravaOAuthBus
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
@@ -98,6 +100,8 @@ class SharedViewModel @Inject constructor(
     private val measurementFacade: MeasurementFacade,
     private val dataManagementFacade: DataManagementFacade,
     private val settingsFacade: SettingsFacade,
+    private val syncDryRunMode: SyncDryRunMode,
+    private val stravaOAuthBus: StravaOAuthBus,
 ) : ViewModel(), SettingsFacade by settingsFacade {
 
     companion object {
@@ -730,6 +734,36 @@ class SharedViewModel @Inject constructor(
 
     fun getPlausiblePercentRange(typeKey: MeasurementTypeKey) =
         measurementFacade.plausiblePercentRangeFor(typeKey)
+
+    suspend fun testHevyConnection(apiKey: String): Result<Unit> =
+        measurementFacade.testHevyConnection(apiKey)
+
+    // -------------------------------------------------------------------------
+    // Strava
+    // -------------------------------------------------------------------------
+
+    val stravaOAuthPendingCode = stravaOAuthBus.pendingCode
+    val stravaOAuthPendingError = stravaOAuthBus.pendingError
+    fun consumeStravaOAuthCode() = stravaOAuthBus.clear()
+
+    suspend fun testStravaConnection(accessToken: String): Result<Unit> =
+        measurementFacade.testStravaConnection(accessToken)
+
+    suspend fun stravaExchangeCode(userId: Int, code: String): Result<Unit> =
+        measurementFacade.stravaExchangeCode(userId, code)
+
+    suspend fun stravaDisconnect(userId: Int) =
+        measurementFacade.stravaDisconnect(userId)
+
+    // -------------------------------------------------------------------------
+    // Developer / dry-run
+    // -------------------------------------------------------------------------
+
+    val syncDryRunEnabled: StateFlow<Boolean> = syncDryRunMode.enabled
+    val syncDryRunLogPath: String get() = syncDryRunMode.logFile().absolutePath
+
+    fun setSyncDryRunEnabled(enabled: Boolean) = syncDryRunMode.setEnabled(enabled)
+    fun clearSyncDryRunLog() = syncDryRunMode.clearLog()
 
     fun performCsvExport(
         userId: Int,

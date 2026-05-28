@@ -23,6 +23,11 @@ import com.health.openscale.core.bluetooth.data.ScaleUser
 import com.health.openscale.core.bluetooth.libs.StandardImpedanceLib
 import com.health.openscale.core.data.GenderType
 import com.health.openscale.core.service.ScannedDeviceInfo
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import java.util.Date
 import java.util.Locale
 import java.util.UUID
@@ -77,6 +82,12 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
     private var z5 = 0.0  // pkt1 left-leg impedance (Ω)
     private var gotImpedance = false
 
+    private var isLiveWeightLocked = false
+    private var isLiveMeasurement = false
+
+    private val scope = CoroutineScope(Dispatchers.Main)
+    private var fallbackJob: Job? = null
+
     override fun supportFor(device: ScannedDeviceInfo): DeviceSupport? {
         val name = device.name.lowercase(Locale.ROOT)
         val nameMatch = name == "ssw532" || name.startsWith("ssw") || name.contains("fg2211")
@@ -100,16 +111,26 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
         state = State.WAITING_SESSION
         savedWeightKg = 0f
         bodyCompPublished = false
+        isLiveWeightLocked = false
+        isLiveMeasurement = false
+        fallbackJob?.cancel()
+        fallbackJob = null
+        reset() // Defensive reset of all session fields on start
         setNotifyOn(SERVICE, CHAR_BC)
         // Remaining setup triggered by the scale's first FFB3 indication (onNotification)
     }
 
     override fun onDisconnected() {
-        // Mirror CultSmartScaleProHandler pattern: only publish weight-only if body comp
-        // was never published. Guards against double-publish when requestDisconnect()
-        // fires onDisconnected before reset() clears pendingWeightKg.
+        fallbackJob?.cancel()
+        fallbackJob = null
+        // Only publish if body comp was never published and we had a confirmed live reading.
+        // pendingWeightKg alone is not safe — it could be from a cached replay (pkt0 before pkt2).
         if (!bodyCompPublished) {
-            val fallback = if (savedWeightKg > 0f) savedWeightKg else pendingWeightKg
+            val fallback = when {
+                savedWeightKg > 0f -> savedWeightKg
+                isLiveWeightLocked && pendingWeightKg > 0f -> pendingWeightKg
+                else -> 0f
+            }
             if (fallback > 0f) {
                 publish(ScaleMeasurement().apply {
                     dateTime = Date()
@@ -119,6 +140,8 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
         }
         savedWeightKg = 0f
         bodyCompPublished = false
+        isLiveWeightLocked = false
+        isLiveMeasurement = false
         reset()
     }
 
@@ -170,12 +193,14 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
         val kg = readBE24(d, 6) / 1000.0f
         if (kg > 0f && stability == 0x03) {
             pendingWeightKg = kg
+            isLiveWeightLocked = true
         } else if (kg < 2.0f && savedWeightKg > 0f && !bodyCompPublished) {
             // User stepped off without picking up handles — publish saved weight and disconnect
             logD("step-off detected: publishing savedWeightKg=$savedWeightKg")
             bodyCompPublished = true
             publish(ScaleMeasurement().apply { dateTime = Date(); weight = savedWeightKg })
             savedWeightKg = 0f
+            writeTeardownAck()
             requestDisconnect()
         }
     }
@@ -185,6 +210,13 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
     private fun onMeasurementFrame(d: ByteArray, user: ScaleUser) {
         when (d[2].toUByte().toInt()) {
             0x00 -> {
+                val cmd = d[3].toUByte().toInt()
+                isLiveMeasurement = (cmd == 0xA3 || cmd == 0xA7)
+                if (!isLiveMeasurement) {
+                    logD("Skipping cached measurement (cmd = 0x${cmd.toString(16)})")
+                    pkt0Valid = false
+                    return
+                }
                 pkt0Valid = d[14].toUByte().toInt() == 0x01
                 if (!pkt0Valid) return
                 // Same 3-byte gram encoding as the live weight frame.
@@ -192,7 +224,7 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
                 if (kg > 0f) pendingWeightKg = kg
             }
             0x01 -> {
-                if (!pkt0Valid) return
+                if (!pkt0Valid || !isLiveMeasurement) return
                 // Foot-to-foot path: Trunk (Z3) + Right Leg (Z4) + Left Leg (Z5)
                 z3 = readLE16(d, 7) / 10.0
                 z4 = readLE16(d, 9) / 10.0
@@ -200,14 +232,34 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
                 gotImpedance = true
             }
             0x02 -> {
-                if (pendingWeightKg > 0f) {
+                if (!isLiveWeightLocked || !isLiveMeasurement) {
+                    // Historical replay or non-live measurement — ACK to stop blinking, discard.
+                    writeTeardownAck()
+                    logD("Skipping cached/non-live measurement replay")
+                } else if (pendingWeightKg > 0f) {
                     if (pkt0Valid && gotImpedance) {
                         publishWithBodyComp(user)  // sends ACK + disconnects internally
                     } else {
-                        // Weight locked but no BIA yet — ACK so scale stops blinking,
-                        // stay connected so user can pick up handles for body comp.
-                        writeTeardownAck()
+                        // Weight locked but no BIA yet — stay connected so user can pick up handles for body comp.
+                        // We do NOT send writeTeardownAck() here because that shuts down the scale prematurely.
                         savedWeightKg = pendingWeightKg
+
+                        // Start a 5-second timer. If no BIA arrives, publish weight-only and disconnect.
+                        fallbackJob?.cancel()
+                        fallbackJob = scope.launch {
+                            delay(5000)
+                            if (!bodyCompPublished && savedWeightKg > 0f) {
+                                logD("No BIA received within 5s; publishing weight-only")
+                                bodyCompPublished = true
+                                publish(ScaleMeasurement().apply {
+                                    dateTime = Date()
+                                    weight   = savedWeightKg
+                                })
+                                savedWeightKg = 0f
+                                writeTeardownAck()
+                                requestDisconnect()
+                            }
+                        }
                     }
                 }
                 reset()
@@ -218,6 +270,8 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
     // --- Publish ---
 
     private fun publishWithBodyComp(user: ScaleUser) {
+        fallbackJob?.cancel()
+        fallbackJob = null
         // Foot-to-foot impedance via segmental path: Trunk + Right Leg + Left Leg (~500 Ω range)
         val wholeBodyZ = z3 + z4 + z5
         val lib = StandardImpedanceLib(
@@ -261,6 +315,7 @@ class DrTrustSSW532Handler : ScaleDeviceHandler() {
         z4 = 0.0
         z5 = 0.0
         gotImpedance = false
+        isLiveMeasurement = false
     }
 
     // --- User profile write sequence ---
