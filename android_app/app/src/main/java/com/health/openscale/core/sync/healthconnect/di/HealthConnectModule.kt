@@ -15,33 +15,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.health.openscale.core.sync.webhook.di
+package com.health.openscale.core.sync.healthconnect.di
 
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.sync.dryrun.DryRunInterceptor
-import com.health.openscale.core.sync.webhook.WebhookSettings
+import com.health.openscale.core.sync.healthconnect.HealthConnectApi
+import com.health.openscale.core.sync.healthconnect.HealthConnectApiClient
+import com.health.openscale.core.sync.healthconnect.HealthConnectSettings
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object WebhookModule {
+interface HealthConnectModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideOkHttpClient(dryRunInterceptor: DryRunInterceptor): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
-        .writeTimeout(15, TimeUnit.SECONDS)
-        .addInterceptor(dryRunInterceptor)
-        .build()
+    fun bindHealthConnectApi(client: HealthConnectApiClient): HealthConnectApi
 
-    @Provides
-    @Singleton
-    fun provideWebhookSettings(settings: SettingsFacade): WebhookSettings = settings
+    companion object {
+        @Provides
+        @Singleton
+        fun provideHealthConnectSettings(settings: SettingsFacade): HealthConnectSettings = settings
+    }
 }

@@ -15,33 +15,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <https://www.gnu.org/licenses/>.
  */
-package com.health.openscale.core.sync.webhook.di
+package com.health.openscale.core.sync.hevy.di
 
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.sync.dryrun.DryRunInterceptor
-import com.health.openscale.core.sync.webhook.WebhookSettings
+import com.health.openscale.core.sync.hevy.HevySettings
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import okhttp3.OkHttpClient
-import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object WebhookModule {
+object HevyModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(dryRunInterceptor: DryRunInterceptor): OkHttpClient = OkHttpClient.Builder()
-        .connectTimeout(10, TimeUnit.SECONDS)
-        .readTimeout(15, TimeUnit.SECONDS)
-        .writeTimeout(15, TimeUnit.SECONDS)
-        .addInterceptor(dryRunInterceptor)
-        .build()
-
-    @Provides
-    @Singleton
-    fun provideWebhookSettings(settings: SettingsFacade): WebhookSettings = settings
+    fun provideHevySettings(settings: SettingsFacade): HevySettings = settings
 }

@@ -29,6 +29,8 @@ bouncycastle = "1.83"
 okhttp = "4.12.0"
 kotlinx-coroutines = "1.9.0"
 orgjson = "20240303"
+security-crypto = "1.0.0"
+health-connect = "1.1.0-alpha11"
 
 
 [libraries]
@@ -76,6 +78,8 @@ okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhtt
 okhttp-mockwebserver = { group = "com.squareup.okhttp3", name = "mockwebserver", version.ref = "okhttp" }
 kotlinx-coroutines-test = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
 orgjson = { group = "org.json", name = "json", version.ref = "orgjson" }
+security-crypto = { group = "androidx.security", name = "security-crypto", version.ref = "security-crypto" }
+health-connect = { group = "androidx.health.connect", name = "connect-client", version.ref = "health-connect" }
 
 
 [plugins]

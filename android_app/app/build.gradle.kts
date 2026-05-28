@@ -248,6 +248,12 @@ dependencies {
     // OkHttp for webhook sync
     implementation(libs.okhttp)
     testImplementation(libs.okhttp.mockwebserver)
+
+    // Encrypted storage for credentials
+    implementation(libs.security.crypto)
+
+    // Health Connect
+    implementation(libs.health.connect)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.orgjson)
 
