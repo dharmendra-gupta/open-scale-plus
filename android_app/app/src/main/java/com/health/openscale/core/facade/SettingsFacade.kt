@@ -323,6 +323,7 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setFileLoggingEnabled(enabled: Boolean) {
         LogManager.d(TAG, "Setting file logging enabled to: $enabled")
         saveSetting(SettingsPreferenceKeys.IS_FILE_LOGGING_ENABLED.name, enabled)
+        LogManager.updateLoggingPreference(enabled)
     }
 
     override val isFirstAppStart: Flow<Boolean> = observeSetting(

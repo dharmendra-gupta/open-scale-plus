@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.sync.webhook
 
+import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -31,19 +32,27 @@ import javax.inject.Singleton
 class WebhookSyncClient @Inject constructor(
     private val httpClient: OkHttpClient,
 ) {
+    private companion object {
+        const val TAG = "WebhookSyncClient"
+    }
+
     suspend fun send(
         url: String,
         headers: Map<String, String>,
         payloadJson: String,
     ): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
+            val headerKeys = headers.keys.joinToString()
+            LogManager.i(TAG, "POST $url headers=[$headerKeys] body=$payloadJson")
             val body = payloadJson.toRequestBody("application/json".toMediaType())
             val requestBuilder = Request.Builder()
                 .url(url)
                 .post(body)
             headers.forEach { (k, v) -> requestBuilder.addHeader(k, v) }
             httpClient.newCall(requestBuilder.build()).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("HTTP ${response.code}")
+                val responseBody = response.body?.string() ?: ""
+                LogManager.i(TAG, "POST $url → ${response.code}${if (responseBody.isNotBlank()) " body=$responseBody" else ""}")
+                if (!response.isSuccessful) throw IOException("HTTP ${response.code}: $responseBody")
             }
         }
     }

@@ -120,6 +120,7 @@ android {
             versionNameSuffix = "-debug"
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_dev"
             manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_dev_round"
+            buildConfigField("boolean", "ENABLE_FILE_LOGGING", "true")
         }
 
         release {
@@ -129,6 +130,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            buildConfigField("boolean", "ENABLE_FILE_LOGGING", "false")
         }
 
         create("beta") {
@@ -139,6 +141,7 @@ android {
             manifestPlaceholders["appName"] = "openScale"
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_beta"
             manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_beta_round"
+            buildConfigField("boolean", "ENABLE_FILE_LOGGING", "true")
         }
     }
 

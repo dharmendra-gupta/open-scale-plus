@@ -196,70 +196,57 @@ class HevyApiClientTest {
     }
 
     @Test
-    fun sync_409_overrideEnabled_sendsGetThenPut() = runTest {
-        val listBody = """{"body_measurements":[{"id":"abc123","date":"2026-05-27"}]}"""
+    fun sync_409_overrideEnabled_sendsPostThenPut() = runTest {
         server.enqueue(MockResponse().setResponseCode(409))
-        server.enqueue(MockResponse().setResponseCode(200).setBody(listBody))
         server.enqueue(MockResponse().setResponseCode(200))
 
         client.sync("key", "2026-05-27", 75.0f, null, null, true)
 
         val post = server.takeRequest()
-        val get = server.takeRequest()
         val put = server.takeRequest()
         assertThat(post.method).isEqualTo("POST")
-        assertThat(get.method).isEqualTo("GET")
         assertThat(put.method).isEqualTo("PUT")
     }
 
     @Test
-    fun sync_409_overrideEnabled_putUsesCorrectId() = runTest {
-        val listBody = """{"body_measurements":[{"id":"abc123","date":"2026-05-27"}]}"""
+    fun sync_409_overrideEnabled_putUsesDateInPath() = runTest {
         server.enqueue(MockResponse().setResponseCode(409))
-        server.enqueue(MockResponse().setResponseCode(200).setBody(listBody))
         server.enqueue(MockResponse().setResponseCode(200))
 
         client.sync("key", "2026-05-27", 75.0f, null, null, true)
 
         server.takeRequest() // POST
-        server.takeRequest() // GET
         val put = server.takeRequest()
-        assertThat(put.path).contains("abc123")
+        assertThat(put.path).contains("2026-05-27")
     }
 
     @Test
-    fun sync_409_overrideEnabled_entryNotInList_returnsFailure() = runTest {
-        val listBody = """{"body_measurements":[{"id":"xyz","date":"2026-05-26"}]}"""
+    fun sync_409_overrideEnabled_putFailure_returnsFailure() = runTest {
         server.enqueue(MockResponse().setResponseCode(409))
-        server.enqueue(MockResponse().setResponseCode(200).setBody(listBody))
+        server.enqueue(MockResponse().setResponseCode(400).setBody("bad request"))
 
         val result = client.sync("key", "2026-05-27", 75.0f, null, null, true)
 
         assertThat(result.isFailure).isTrue()
-        assertThat(result.exceptionOrNull()?.message).contains("No existing entry")
+        assertThat(result.exceptionOrNull()?.message).contains("400")
     }
 
     @Test
-    fun sync_409_overrideEnabled_arrayListBody_parsedCorrectly() = runTest {
-        val listBody = """[{"id":"direct123","date":"2026-05-27"}]"""
+    fun sync_409_overrideEnabled_putBodyHasNoDate() = runTest {
         server.enqueue(MockResponse().setResponseCode(409))
-        server.enqueue(MockResponse().setResponseCode(200).setBody(listBody))
         server.enqueue(MockResponse().setResponseCode(200))
 
-        val result = client.sync("key", "2026-05-27", 75.0f, null, null, true)
+        client.sync("key", "2026-05-27", 75.0f, null, null, true)
 
-        assertThat(result.isSuccess).isTrue()
         server.takeRequest() // POST
-        server.takeRequest() // GET
         val put = server.takeRequest()
-        assertThat(put.path).contains("direct123")
+        val body = JSONObject(put.body.readUtf8())
+        assertThat(body.has("date")).isFalse()
     }
 
     @Test
     fun sync_409_overrideEnabled_putReturnsSuccess() = runTest {
-        val listBody = """{"body_measurements":[{"id":"abc123","date":"2026-05-27"}]}"""
         server.enqueue(MockResponse().setResponseCode(409))
-        server.enqueue(MockResponse().setResponseCode(200).setBody(listBody))
         server.enqueue(MockResponse().setResponseCode(200))
 
         val result = client.sync("key", "2026-05-27", 75.0f, null, null, true)

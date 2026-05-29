@@ -80,17 +80,17 @@ class WebhookTokenTest {
     // --- Resolve body composition tokens ---
 
     @Test
-    fun resolve_weight_returnsFloatValue() {
+    fun resolve_weight_returnsDoubleValue() {
         val m = makeMeasurement(MeasurementTypeKey.WEIGHT to 75.5f)
         val result = WebhookTokenResolver.resolve(WebhookToken.WEIGHT, m)
-        assertThat(result).isEqualTo(75.5f)
+        assertThat(result).isEqualTo(75.5)
     }
 
     @Test
-    fun resolve_fat_returnsFloatValue() {
+    fun resolve_fat_returnsDoubleValue() {
         val m = makeMeasurement(MeasurementTypeKey.BODY_FAT to 18.2f)
         val result = WebhookTokenResolver.resolve(WebhookToken.FAT, m)
-        assertThat(result).isEqualTo(18.2f)
+        assertThat(result).isEqualTo(18.2)
     }
 
     @Test

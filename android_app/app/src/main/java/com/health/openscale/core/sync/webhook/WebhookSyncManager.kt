@@ -43,19 +43,28 @@ class WebhookSyncManager @Inject constructor(
             try {
                 val userId = measurement.measurement.userId
                 val url = settings.webhookUrl(userId).first().trim()
-                if (url.isBlank()) return@launch
+                if (url.isBlank()) {
+                    LogManager.d(TAG, "Skipped: no URL configured for user $userId")
+                    return@launch
+                }
 
                 val schemaJson = settings.webhookPayloadSchema(userId).first()
-                if (schemaJson.isBlank()) return@launch
+                if (schemaJson.isBlank()) {
+                    LogManager.w(TAG, "Skipped: no payload schema configured for user $userId")
+                    return@launch
+                }
 
                 val headersJson = settings.webhookAuthHeaders(userId).first()
                 val headers = WebhookPayloadBuilder.buildHeaders(headersJson)
                 val payload = WebhookPayloadBuilder.buildPayload(schemaJson, measurement)
 
-                client.send(url, headers, payload).onFailure { e ->
-                    LogManager.e(TAG, "Webhook send failed: ${e.message}", e)
-                    onError?.invoke(e.message ?: "Unknown error")
-                }
+                LogManager.i(TAG, "Sending to $url — payload: $payload")
+                client.send(url, headers, payload)
+                    .onSuccess { LogManager.i(TAG, "Webhook sent successfully") }
+                    .onFailure { e ->
+                        LogManager.e(TAG, "Webhook send failed: ${e.message}", e)
+                        onError?.invoke(e.message ?: "Unknown error")
+                    }
             } catch (e: Exception) {
                 LogManager.e(TAG, "Webhook unexpected error", e)
                 onError?.invoke(e.message ?: "Unknown error")

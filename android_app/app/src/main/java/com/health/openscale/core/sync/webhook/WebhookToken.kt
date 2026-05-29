@@ -57,6 +57,7 @@ object WebhookTokenResolver {
             else -> {
                 val typeKey = token.toMeasurementTypeKey()
                 measurement.values.firstOrNull { it.type.key == typeKey }?.value?.floatValue
+                    ?.let { String.format("%.2f", it).toDouble() }
             }
         }
     }

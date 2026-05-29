@@ -99,6 +99,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import com.health.openscale.BuildConfig
 import com.health.openscale.R
 import com.health.openscale.core.data.MeasurementTypeIcon
 import com.health.openscale.core.data.SupportedLanguage
@@ -601,71 +602,73 @@ fun GeneralSettingsScreen(
                 }
             })
 
-        // --- Diagnostics ---
-        SettingsSectionTitle(text = stringResource(R.string.diagnostics_title))
+        // --- Diagnostics (debug + beta only) ---
+        if (BuildConfig.ENABLE_FILE_LOGGING) {
+            SettingsSectionTitle(text = stringResource(R.string.diagnostics_title))
 
-        SettingsGroup(
-            leadingIcon = {
-                Icon(
-                    imageVector = Icons.Filled.Description,
-                    contentDescription = stringResource(R.string.file_logging_icon_content_description),
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            },
-            title = stringResource(R.string.file_logging_label),
-            checked = isFileLoggingEnabled,
-            onCheckedChange = { wantsToEnable ->
-                if (wantsToEnable) {
-                    showLoggingActivationDialog = true
-                } else {
-                    scope.launch {
-                        sharedViewModel.setFileLoggingEnabled(false)
-                        LogManager.updateLoggingPreference(false)
-                        sharedViewModel.showSnackbar(
-                            context.getString(R.string.file_logging_disabled_snackbar)
-                        )
+            SettingsGroup(
+                leadingIcon = {
+                    Icon(
+                        imageVector = Icons.Filled.Description,
+                        contentDescription = stringResource(R.string.file_logging_icon_content_description),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                },
+                title = stringResource(R.string.file_logging_label),
+                checked = isFileLoggingEnabled,
+                onCheckedChange = { wantsToEnable ->
+                    if (wantsToEnable) {
+                        showLoggingActivationDialog = true
+                    } else {
+                        scope.launch {
+                            sharedViewModel.setFileLoggingEnabled(false)
+                            LogManager.updateLoggingPreference(false)
+                            sharedViewModel.showSnackbar(
+                                context.getString(R.string.file_logging_disabled_snackbar)
+                            )
+                        }
                     }
-                }
-            },
-            content = {
-            },
-            persistentContent = {
-                if (isFileLoggingEnabled || hasLogFile) {
-                    OutlinedButton(
-                        onClick = {
-                            val logFile = LogManager.getLogFile()
-                            if (logFile != null && logFile.exists()) {
-                                val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-                                    addCategory(Intent.CATEGORY_OPENABLE)
-                                    type = "text/plain"
-                                    putExtra(Intent.EXTRA_TITLE, logFile.name)
-                                }
-                                try {
-                                    createFileLauncher.launch(intent)
-                                } catch (e: ActivityNotFoundException) {
+                },
+                content = {
+                },
+                persistentContent = {
+                    if (isFileLoggingEnabled || hasLogFile) {
+                        OutlinedButton(
+                            onClick = {
+                                val logFile = LogManager.getLogFile()
+                                if (logFile != null && logFile.exists()) {
+                                    val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
+                                        addCategory(Intent.CATEGORY_OPENABLE)
+                                        type = "text/plain"
+                                        putExtra(Intent.EXTRA_TITLE, logFile.name)
+                                    }
+                                    try {
+                                        createFileLauncher.launch(intent)
+                                    } catch (e: ActivityNotFoundException) {
+                                        scope.launch {
+                                            sharedViewModel.showSnackbar(
+                                                context.getString(R.string.log_export_no_app_error)
+                                            )
+                                        }
+                                        LogManager.e("GeneralSettingsScreen",
+                                            "Error launching create document intent for export", e)
+                                    }
+                                } else {
                                     scope.launch {
                                         sharedViewModel.showSnackbar(
-                                            context.getString(R.string.log_export_no_app_error)
+                                            context.getString(R.string.log_export_no_file_to_export)
                                         )
                                     }
-                                    LogManager.e("GeneralSettingsScreen",
-                                        "Error launching create document intent for export", e)
                                 }
-                            } else {
-                                scope.launch {
-                                    sharedViewModel.showSnackbar(
-                                        context.getString(R.string.log_export_no_file_to_export)
-                                    )
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text(stringResource(R.string.export_log_file_button))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(stringResource(R.string.export_log_file_button))
+                        }
                     }
                 }
-            }
-        )
+            )
+        }
     }
 }
 
