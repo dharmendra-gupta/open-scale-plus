@@ -1,3 +1,5 @@
+> **Note:** This documentation is not fully up to date for **openScale+**. It still reflects the original openScale documentation. A full README update (name, branding, new features) is tracked in [#3](https://github.com/dharmendra-gupta/open-scale-plus/issues/3).
+
 &nbsp; <img src="https://github.com/oliexdev/openScale/blob/master/fastlane/metadata/android/en-GB/images/icon.png" alt="openScale logo" height="60"/> &nbsp;openScale [![CI](https://github.com/oliexdev/openScale/actions/workflows/ci_master.yml/badge.svg)](https://github.com/oliexdev/openScale/actions/workflows/ci_master.yml)
 [![Translation status](https://hosted.weblate.org/widgets/openscale/-/strings/svg-badge.svg)](https://hosted.weblate.org/engage/openscale/?utm_source=widget)
 =========
