@@ -17,6 +17,7 @@
  */
 package com.health.openscale.core.sync.strava
 
+import com.health.openscale.core.utils.LogManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaType
@@ -37,6 +38,7 @@ class StravaApiClient @Inject constructor(
         private val FORM_MEDIA = "application/x-www-form-urlencoded".toMediaType()
         const val REDIRECT_URI = "openscale://localhost"
         private const val SCOPE = "profile:write"
+        private const val TAG = "StravaApiClient"
 
         fun buildAuthUrl(clientId: String): String =
             "https://www.strava.com/oauth/authorize" +
@@ -99,13 +101,17 @@ class StravaApiClient @Inject constructor(
     /** Updates the authenticated athlete's weight (kg). */
     suspend fun syncWeight(accessToken: String, weightKg: Float): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
-            val body = "weight=$weightKg".toRequestBody(FORM_MEDIA)
+            val url = "$baseUrl/api/v3/athlete"
+            val bodyStr = "weight=${"%.2f".format(weightKg)}"
+            LogManager.i(TAG, "PUT $url body=$bodyStr")
             val request = Request.Builder()
-                .url("$baseUrl/api/v3/athlete")
+                .url(url)
                 .addHeader("Authorization", "Bearer $accessToken")
-                .put(body)
+                .put(bodyStr.toRequestBody(FORM_MEDIA))
                 .build()
             httpClient.newCall(request).execute().use { response ->
+                val responseBody = response.body?.string() ?: ""
+                LogManager.i(TAG, "PUT $url → ${response.code}${if (responseBody.isNotBlank()) " body=$responseBody" else ""}")
                 if (!response.isSuccessful) throw IOException("Strava HTTP ${response.code}")
             }
         }

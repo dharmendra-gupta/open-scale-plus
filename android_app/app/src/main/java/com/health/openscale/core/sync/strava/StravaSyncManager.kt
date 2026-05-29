@@ -48,19 +48,29 @@ class StravaSyncManager @Inject constructor(
             try {
                 val userId = measurement.measurement.userId
                 val accessToken = settings.stravaAccessToken(userId).first().trim()
-                if (accessToken.isBlank()) return@launch
+                if (accessToken.isBlank()) {
+                    LogManager.d(TAG, "Skipped: not connected for user $userId")
+                    return@launch
+                }
 
-                val weightKg = measurement.extractWeightKg() ?: return@launch
+                val weightKg = measurement.extractWeightKg() ?: run {
+                    LogManager.w(TAG, "Skipped: no weight in measurement for user $userId")
+                    return@launch
+                }
 
                 val tokenToUse = if (isTokenExpired(userId)) {
-                    refreshOrNull(userId) ?: return@launch
+                    refreshOrNull(userId) ?: run {
+                        LogManager.e(TAG, "Skipped: token expired and refresh failed for user $userId")
+                        return@launch
+                    }
                 } else {
                     accessToken
                 }
 
-                client.syncWeight(tokenToUse, weightKg).onFailure { e ->
-                    LogManager.e(TAG, "Strava sync failed: ${e.message}", e)
-                }
+                LogManager.i(TAG, "Syncing weight=$weightKg kg for user $userId")
+                client.syncWeight(tokenToUse, weightKg)
+                    .onSuccess { LogManager.i(TAG, "Strava sync successful weight=$weightKg kg") }
+                    .onFailure { e -> LogManager.e(TAG, "Strava sync failed: ${e.message}", e) }
             } catch (e: Exception) {
                 LogManager.e(TAG, "Strava sync unexpected error", e)
             }

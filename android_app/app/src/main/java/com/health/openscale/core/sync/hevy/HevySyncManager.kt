@@ -47,7 +47,10 @@ class HevySyncManager @Inject constructor(
             try {
                 val userId = measurement.measurement.userId
                 val apiKey = settings.hevyApiKey(userId).first().trim()
-                if (apiKey.isBlank()) return@launch
+                if (apiKey.isBlank()) {
+                    LogManager.d(TAG, "Skipped: no API key configured for user $userId")
+                    return@launch
+                }
 
                 val override = settings.hevyOverrideEnabled(userId).first()
                 val date = dateFmt.format(Date(measurement.measurement.timestamp))
@@ -55,11 +58,15 @@ class HevySyncManager @Inject constructor(
                 val bodyFatPct = measurement.extractBodyFatPct()
                 val lbmKg = measurement.extractLbmKg()
 
-                if (weightKg == null && bodyFatPct == null && lbmKg == null) return@launch
-
-                client.sync(apiKey, date, weightKg, bodyFatPct, lbmKg, override).onFailure { e ->
-                    LogManager.e(TAG, "Hevy sync failed: ${e.message}", e)
+                if (weightKg == null && bodyFatPct == null && lbmKg == null) {
+                    LogManager.w(TAG, "Skipped: no syncable values in measurement for user $userId")
+                    return@launch
                 }
+
+                LogManager.i(TAG, "Syncing date=$date weight=$weightKg fat=$bodyFatPct lbm=$lbmKg override=$override")
+                client.sync(apiKey, date, weightKg, bodyFatPct, lbmKg, override)
+                    .onSuccess { LogManager.i(TAG, "Hevy sync successful for $date") }
+                    .onFailure { e -> LogManager.e(TAG, "Hevy sync failed: ${e.message}", e) }
             } catch (e: Exception) {
                 LogManager.e(TAG, "Hevy sync unexpected error", e)
             }

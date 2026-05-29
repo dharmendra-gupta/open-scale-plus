@@ -101,12 +101,15 @@ class OpenScaleApp : Application(), Configuration.Provider {
 
     private fun initializeLogging() {
         applicationScope.launch {
-            val isFileLoggingEnabled = try {
-                settingsFacade.isFileLoggingEnabled.first()
-            } catch (e: Exception) {
-                // Log to standard Android Log if our LogManager or DataStore fails early
-                Log.e(TAG, "Failed to retrieve isFileLoggingEnabled setting", e)
-                false
+            val isFileLoggingEnabled = if (BuildConfig.ENABLE_FILE_LOGGING) {
+                true
+            } else {
+                try {
+                    settingsFacade.isFileLoggingEnabled.first()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to retrieve isFileLoggingEnabled setting", e)
+                    false
+                }
             }
             LogManager.init(applicationContext, isFileLoggingEnabled)
             LogManager.i(TAG, "LogManager initialized. File logging enabled: $isFileLoggingEnabled")
