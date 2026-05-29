@@ -3,8 +3,15 @@ name: Pull Request CI
 on:
   pull_request:
     branches:
-      - master
+      - main
       - dev
+    paths-ignore:
+      - '**.md'
+      - 'docs_md/**'
+      - 'docs/**'
+      - 'fastlane/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
 
 jobs:
   test:

@@ -3,9 +3,16 @@ name: Release Build
 on:
   push:
     branches:
-      - master
+      - main
     tags:
       - 'v*'
+    paths-ignore:
+      - '**.md'
+      - 'docs_md/**'
+      - 'docs/**'
+      - 'fastlane/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
   workflow_dispatch:
 
 jobs:
@@ -61,15 +68,15 @@ jobs:
           path: android_app/app/build/outputs/apk/release/*.apk
           retention-days: 30
 
-      # Creates a rolling pre-release on every master push (not a tag)
-      - name: Create latest pre-release
-        if: github.ref == 'refs/heads/master'
+      # Creates a rolling "latest" dev build on every main push (not a tag)
+      - name: Create dev release
+        if: github.ref == 'refs/heads/main'
         uses: marvinpinto/action-automatic-releases@latest
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          automatic_release_tag: latest
+          automatic_release_tag: main-latest
           prerelease: true
-          title: openScale+ Latest
+          title: openScale+ Main Build
           files: android_app/app/build/outputs/apk/release/*.apk
 
       # Creates a proper versioned release when a tag like v1.0.0 is pushed
