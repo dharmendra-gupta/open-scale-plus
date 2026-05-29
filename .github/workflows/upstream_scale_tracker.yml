@@ -1,0 +1,66 @@
+name: Upstream Scale Tracker
+
+on:
+  schedule:
+    - cron: '0 9 1,15 * *'   # 1st and 15th of each month
+  workflow_dispatch:
+
+jobs:
+  check-upstream:
+    name: Check upstream for new scale support
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+
+    steps:
+      - name: Shallow-clone upstream (last 18 days)
+        run: git clone --shallow-since="18 days ago" https://github.com/oliexdev/openScale.git upstream
+
+      - name: Scan bluetooth directory for recent commits
+        id: scan
+        run: |
+          cd upstream
+          BLUETOOTH_DIR="android_app/app/src/main/java/com/health/openscale/core/bluetooth"
+          git log --since="16 days ago" --format="%H|%s" -- "$BLUETOOTH_DIR/" > /tmp/commits.txt
+          if [ -s /tmp/commits.txt ]; then
+            echo "found=true" >> $GITHUB_OUTPUT
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build comment and post to tracking issue
+        if: steps.scan.outputs.found == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo "### Upstream scale changes — $(date +%Y-%m-%d)"
+            echo ""
+            echo "| Commit | Message | Upstream PR |"
+            echo "|--------|---------|-------------|"
+
+            while IFS='|' read -r sha subject; do
+              [ -z "$sha" ] && continue
+              SHORT="${sha:0:7}"
+              COMMIT_URL="https://github.com/oliexdev/openScale/commit/$sha"
+
+              PR_JSON=$(gh api "repos/oliexdev/openScale/commits/$sha/pulls" \
+                -H "Accept: application/vnd.github.groot-preview+json" 2>/dev/null || echo "[]")
+              PR_NUM=$(echo "$PR_JSON" | jq -r 'if length > 0 then .[0].number else empty end')
+
+              if [ -n "$PR_NUM" ]; then
+                PR_CELL="[#${PR_NUM}](https://github.com/oliexdev/openScale/pull/${PR_NUM})"
+              else
+                PR_CELL="—"
+              fi
+
+              echo "| [\`$SHORT\`]($COMMIT_URL) | $subject | $PR_CELL |"
+            done < /tmp/commits.txt
+
+            echo ""
+            echo "_Cherry-pick scale handler files to \`dev\` as needed. See issue body for steps._"
+          } > /tmp/comment_body.md
+
+          gh issue comment 28 \
+            --repo dharmendra-gupta/open-scale-plus \
+            --body-file /tmp/comment_body.md
