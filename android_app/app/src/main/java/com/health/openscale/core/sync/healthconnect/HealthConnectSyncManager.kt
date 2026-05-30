@@ -44,29 +44,38 @@ class HealthConnectSyncManager @Inject constructor(
         scope.launch {
             try {
                 val userId = measurement.measurement.userId
-                if (!settings.healthConnectEnabled(userId).first()) return@launch
+                if (!settings.healthConnectEnabled(userId).first()) {
+                    LogManager.d(TAG, "Skipped: not enabled for user $userId")
+                    return@launch
+                }
+
+                val weight = measurement.extractWeightKg()
+                val fat = measurement.extractBodyFatPct()
+                val lbm = measurement.extractLbmKg()
+                val bone = measurement.extractBoneKg()
+                LogManager.i(TAG, "Syncing user=$userId weight=$weight fat=$fat lbm=$lbm bone=$bone")
 
                 val timestamp = Instant.ofEpochMilli(measurement.measurement.timestamp)
 
-                measurement.extractWeightKg()?.let { kg ->
-                    client.insertWeight(kg.toDouble(), timestamp).onFailure { e ->
-                        LogManager.e(TAG, "Weight insert failed: ${e.message}", e)
-                    }
+                weight?.let { kg ->
+                    client.insertWeight(kg.toDouble(), timestamp)
+                        .onSuccess { LogManager.i(TAG, "Weight inserted: ${"%.2f".format(kg)} kg") }
+                        .onFailure { e -> LogManager.e(TAG, "Weight insert failed: ${e.message}", e) }
                 }
-                measurement.extractBodyFatPct()?.let { pct ->
-                    client.insertBodyFat(pct.toDouble(), timestamp).onFailure { e ->
-                        LogManager.e(TAG, "Body fat insert failed: ${e.message}", e)
-                    }
+                fat?.let { pct ->
+                    client.insertBodyFat(pct.toDouble(), timestamp)
+                        .onSuccess { LogManager.i(TAG, "Body fat inserted: ${"%.2f".format(pct)} %") }
+                        .onFailure { e -> LogManager.e(TAG, "Body fat insert failed: ${e.message}", e) }
                 }
-                measurement.extractLbmKg()?.let { kg ->
-                    client.insertLeanBodyMass(kg.toDouble(), timestamp).onFailure { e ->
-                        LogManager.e(TAG, "LBM insert failed: ${e.message}", e)
-                    }
+                lbm?.let { kg ->
+                    client.insertLeanBodyMass(kg.toDouble(), timestamp)
+                        .onSuccess { LogManager.i(TAG, "LBM inserted: ${"%.2f".format(kg)} kg") }
+                        .onFailure { e -> LogManager.e(TAG, "LBM insert failed: ${e.message}", e) }
                 }
-                measurement.extractBoneKg()?.let { kg ->
-                    client.insertBoneMass(kg.toDouble(), timestamp).onFailure { e ->
-                        LogManager.e(TAG, "Bone mass insert failed: ${e.message}", e)
-                    }
+                bone?.let { kg ->
+                    client.insertBoneMass(kg.toDouble(), timestamp)
+                        .onSuccess { LogManager.i(TAG, "Bone mass inserted: ${"%.2f".format(kg)} kg") }
+                        .onFailure { e -> LogManager.e(TAG, "Bone mass insert failed: ${e.message}", e) }
                 }
             } catch (e: Exception) {
                 LogManager.e(TAG, "HC sync unexpected error", e)
