@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -66,7 +67,12 @@ class HevySyncManager @Inject constructor(
                 LogManager.i(TAG, "Syncing date=$date weight=$weightKg fat=$bodyFatPct lbm=$lbmKg override=$override")
                 client.sync(apiKey, date, weightKg, bodyFatPct, lbmKg, override)
                     .onSuccess { LogManager.i(TAG, "Hevy sync successful for $date") }
-                    .onFailure { e -> LogManager.e(TAG, "Hevy sync failed: ${e.message}", e) }
+                    .onFailure { e ->
+                        if (e is IOException)
+                            LogManager.w(TAG, "Hevy sync network error (check Hevy to confirm receipt): ${e.message}")
+                        else
+                            LogManager.e(TAG, "Hevy sync failed: ${e.message}", e)
+                    }
             } catch (e: Exception) {
                 LogManager.e(TAG, "Hevy sync unexpected error", e)
             }
