@@ -47,9 +47,15 @@ class HevyApiClient @Inject constructor(
         bodyFatPct: Float?,
         lbmKg: Float?,
         overrideExisting: Boolean,
+        waistCm: Float? = null,
+        hipsCm: Float? = null,
+        chestCm: Float? = null,
+        neckCm: Float? = null,
+        bicepCm: Float? = null,
+        thighCm: Float? = null,
     ): Result<Unit> = withContext(Dispatchers.IO) {
         runCatching {
-            val payload = buildPayload(date, weightKg, bodyFatPct, lbmKg)
+            val payload = buildPayload(date, weightKg, bodyFatPct, lbmKg, waistCm, hipsCm, chestCm, neckCm, bicepCm, thighCm)
             val url = "$baseUrl/body_measurements"
             LogManager.i(TAG, "POST $url body=$payload")
             val request = Request.Builder()
@@ -62,7 +68,7 @@ class HevyApiClient @Inject constructor(
             LogManager.i(TAG, "POST $url → $code${if (body.isNotBlank()) " body=$body" else ""}")
             when {
                 code in 200..299 -> return@runCatching
-                code == 409 && overrideExisting -> updateByDate(apiKey, date, weightKg, bodyFatPct, lbmKg)
+                code == 409 && overrideExisting -> updateByDate(apiKey, date, weightKg, bodyFatPct, lbmKg, waistCm, hipsCm, chestCm, neckCm, bicepCm, thighCm)
                 code == 409 -> throw IOException("Entry already exists for $date. Enable Override in Hevy settings to update.")
                 else -> throw IOException("Hevy HTTP $code: $body")
             }
@@ -84,23 +90,55 @@ class HevyApiClient @Inject constructor(
 
     private fun Float.round2(): Double = String.format("%.2f", this).toDouble()
 
-    private fun buildPayload(date: String, weightKg: Float?, bodyFatPct: Float?, lbmKg: Float?): String =
-        JSONObject().apply {
-            put("date", date)
-            weightKg?.let { put("weight_kg", it.round2()) }
-            bodyFatPct?.let { put("fat_percent", it.round2()) }
-            lbmKg?.let { put("lean_mass_kg", it.round2()) }
-        }.toString()
+    /**
+     * Appends the body-composition fields Hevy accepts. All circumferences are in cm.
+     * Note Hevy's inconsistent naming: neck/chest/bicep use a `_cm` suffix, but
+     * waist/hips/thigh do not — the value is still centimetres. Field names must match
+     * the Hevy `body_measurements` schema exactly or the values are silently dropped.
+     */
+    private fun JSONObject.putMeasurementFields(
+        weightKg: Float?, bodyFatPct: Float?, lbmKg: Float?,
+        waistCm: Float?, hipsCm: Float?, chestCm: Float?, neckCm: Float?,
+        bicepCm: Float?, thighCm: Float?,
+    ): JSONObject = apply {
+        weightKg?.let  { put("weight_kg",     it.round2()) }
+        bodyFatPct?.let { put("fat_percent",   it.round2()) }
+        lbmKg?.let     { put("lean_mass_kg",   it.round2()) }
+        waistCm?.let   { put("waist",          it.round2()) }
+        hipsCm?.let    { put("hips",           it.round2()) }
+        chestCm?.let   { put("chest_cm",       it.round2()) }
+        neckCm?.let    { put("neck_cm",        it.round2()) }
+        bicepCm?.let   { put("left_bicep_cm",  it.round2()); put("right_bicep_cm", it.round2()) }
+        thighCm?.let   { put("left_thigh",     it.round2()); put("right_thigh",    it.round2()) }
+    }
 
-    private fun buildUpdatePayload(weightKg: Float?, bodyFatPct: Float?, lbmKg: Float?): String =
-        JSONObject().apply {
-            weightKg?.let { put("weight_kg", it.round2()) }
-            bodyFatPct?.let { put("fat_percent", it.round2()) }
-            lbmKg?.let { put("lean_mass_kg", it.round2()) }
-        }.toString()
+    private fun buildPayload(
+        date: String,
+        weightKg: Float?, bodyFatPct: Float?, lbmKg: Float?,
+        waistCm: Float?, hipsCm: Float?, chestCm: Float?, neckCm: Float?,
+        bicepCm: Float?, thighCm: Float?,
+    ): String = JSONObject()
+        .put("date", date)
+        .putMeasurementFields(weightKg, bodyFatPct, lbmKg, waistCm, hipsCm, chestCm, neckCm, bicepCm, thighCm)
+        .toString()
 
-    private fun updateByDate(apiKey: String, date: String, weightKg: Float?, bodyFatPct: Float?, lbmKg: Float?) {
-        val payload = buildUpdatePayload(weightKg, bodyFatPct, lbmKg)
+    private fun buildUpdatePayload(
+        weightKg: Float?, bodyFatPct: Float?, lbmKg: Float?,
+        waistCm: Float?, hipsCm: Float?, chestCm: Float?, neckCm: Float?,
+        bicepCm: Float?, thighCm: Float?,
+    ): String = JSONObject()
+        .putMeasurementFields(weightKg, bodyFatPct, lbmKg, waistCm, hipsCm, chestCm, neckCm, bicepCm, thighCm)
+        .toString()
+
+    private fun updateByDate(
+        apiKey: String, date: String,
+        weightKg: Float?, bodyFatPct: Float?, lbmKg: Float?,
+        waistCm: Float?, hipsCm: Float?, chestCm: Float?, neckCm: Float?,
+        bicepCm: Float?, thighCm: Float?,
+    ) {
+        // PUT replaces the whole entry: any Hevy field we omit is set to null. Intended —
+        // we treat openScale+ as the source of truth for the values it manages.
+        val payload = buildUpdatePayload(weightKg, bodyFatPct, lbmKg, waistCm, hipsCm, chestCm, neckCm, bicepCm, thighCm)
         val putUrl = "$baseUrl/body_measurements/$date"
         LogManager.i(TAG, "PUT $putUrl body=$payload")
         val putRequest = Request.Builder()

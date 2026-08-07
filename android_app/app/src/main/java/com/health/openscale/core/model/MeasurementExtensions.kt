@@ -57,3 +57,13 @@ fun MeasurementWithValues.extractBoneKg(): Float? {
         else        -> raw
     }
 }
+
+fun MeasurementWithValues.extractCm(key: MeasurementTypeKey): Float? {
+    val entry = values.firstOrNull { it.type.key == key } ?: return null
+    val raw = entry.value.floatValue ?: return null
+    return when (entry.type.unit) {
+        UnitType.CM   -> raw
+        UnitType.INCH -> raw * 2.54f
+        else          -> raw
+    }
+}
