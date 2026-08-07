@@ -158,6 +158,75 @@ class HevyApiClientTest {
     }
 
     // -------------------------------------------------------------------------
+    // sync — circumference fields must match Hevy's body_measurements schema keys
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun sync_payloadUsesExactHevyCircumferenceKeys() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200))
+        client.sync(
+            "key", "2026-05-27", 80.0f, null, null, false,
+            waistCm = 82.0f, hipsCm = 96.0f, chestCm = 100.0f,
+            neckCm = 38.0f, bicepCm = 34.0f, thighCm = 56.0f,
+        )
+        val body = JSONObject(server.takeRequest().body.readUtf8())
+        // Hevy uses suffix-less keys for waist / hips / thigh (values still cm)
+        assertThat(body.getDouble("waist")).isWithin(0.001).of(82.0)
+        assertThat(body.getDouble("hips")).isWithin(0.001).of(96.0)
+        assertThat(body.getDouble("left_thigh")).isWithin(0.001).of(56.0)
+        assertThat(body.getDouble("right_thigh")).isWithin(0.001).of(56.0)
+        // …but _cm suffix for chest / neck / bicep
+        assertThat(body.getDouble("chest_cm")).isWithin(0.001).of(100.0)
+        assertThat(body.getDouble("neck_cm")).isWithin(0.001).of(38.0)
+        assertThat(body.getDouble("left_bicep_cm")).isWithin(0.001).of(34.0)
+        assertThat(body.getDouble("right_bicep_cm")).isWithin(0.001).of(34.0)
+    }
+
+    @Test
+    fun sync_payloadNeverSendsUnsupportedKeys() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200))
+        client.sync(
+            "key", "2026-05-27", 80.0f, null, null, false,
+            waistCm = 82.0f, hipsCm = 96.0f, thighCm = 56.0f,
+        )
+        val body = JSONObject(server.takeRequest().body.readUtf8())
+        // wrong names Hevy would silently drop, and bmi which Hevy has no field for
+        assertThat(body.has("waist_cm")).isFalse()
+        assertThat(body.has("hips_cm")).isFalse()
+        assertThat(body.has("left_thigh_cm")).isFalse()
+        assertThat(body.has("right_thigh_cm")).isFalse()
+        assertThat(body.has("bmi")).isFalse()
+    }
+
+    @Test
+    fun sync_nullCircumferences_payloadOmitsThem() = runTest {
+        server.enqueue(MockResponse().setResponseCode(200))
+        client.sync("key", "2026-05-27", 80.0f, null, null, false)
+        val body = JSONObject(server.takeRequest().body.readUtf8())
+        assertThat(body.has("waist")).isFalse()
+        assertThat(body.has("hips")).isFalse()
+        assertThat(body.has("chest_cm")).isFalse()
+        assertThat(body.has("neck_cm")).isFalse()
+        assertThat(body.has("left_bicep_cm")).isFalse()
+        assertThat(body.has("left_thigh")).isFalse()
+    }
+
+    @Test
+    fun sync_409_overrideEnabled_putUsesExactHevyCircumferenceKeys() = runTest {
+        server.enqueue(MockResponse().setResponseCode(409))
+        server.enqueue(MockResponse().setResponseCode(200))
+        client.sync(
+            "key", "2026-05-27", 80.0f, null, null, true,
+            waistCm = 82.0f, thighCm = 56.0f,
+        )
+        server.takeRequest() // POST
+        val body = JSONObject(server.takeRequest().body.readUtf8())
+        assertThat(body.getDouble("waist")).isWithin(0.001).of(82.0)
+        assertThat(body.getDouble("left_thigh")).isWithin(0.001).of(56.0)
+        assertThat(body.has("waist_cm")).isFalse()
+    }
+
+    // -------------------------------------------------------------------------
     // sync — error responses
     // -------------------------------------------------------------------------
 

@@ -17,8 +17,10 @@
  */
 package com.health.openscale.core.sync.hevy
 
+import com.health.openscale.core.data.MeasurementTypeKey
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.extractBodyFatPct
+import com.health.openscale.core.model.extractCm
 import com.health.openscale.core.model.extractLbmKg
 import com.health.openscale.core.model.extractWeightKg
 import com.health.openscale.core.utils.LogManager
@@ -54,17 +56,29 @@ class HevySyncManager @Inject constructor(
 
                 val override = settings.hevyOverrideEnabled(userId).first()
                 val date = dateFmt.format(Date(measurement.measurement.timestamp))
-                val weightKg = measurement.extractWeightKg()
+                val weightKg   = measurement.extractWeightKg()
                 val bodyFatPct = measurement.extractBodyFatPct()
-                val lbmKg = measurement.extractLbmKg()
+                val lbmKg      = measurement.extractLbmKg()
+                val waistCm    = measurement.extractCm(MeasurementTypeKey.WAIST)
+                val hipsCm     = measurement.extractCm(MeasurementTypeKey.HIPS)
+                val chestCm    = measurement.extractCm(MeasurementTypeKey.CHEST)
+                val neckCm     = measurement.extractCm(MeasurementTypeKey.NECK)
+                val bicepCm    = measurement.extractCm(MeasurementTypeKey.BICEPS)
+                val thighCm    = measurement.extractCm(MeasurementTypeKey.THIGH)
 
-                if (weightKg == null && bodyFatPct == null && lbmKg == null) {
+                if (weightKg == null && bodyFatPct == null && lbmKg == null &&
+                    waistCm == null && hipsCm == null &&
+                    chestCm == null && neckCm == null && bicepCm == null && thighCm == null) {
                     LogManager.w(TAG, "Skipped: no syncable values in measurement for user $userId")
                     return@launch
                 }
 
-                LogManager.i(TAG, "Syncing date=$date weight=$weightKg fat=$bodyFatPct lbm=$lbmKg override=$override")
-                client.sync(apiKey, date, weightKg, bodyFatPct, lbmKg, override)
+                LogManager.i(TAG, "Syncing date=$date weight=$weightKg fat=$bodyFatPct lbm=$lbmKg waist=$waistCm hips=$hipsCm chest=$chestCm neck=$neckCm bicep=$bicepCm thigh=$thighCm override=$override")
+                client.sync(
+                    apiKey, date, weightKg, bodyFatPct, lbmKg, override,
+                    waistCm = waistCm, hipsCm = hipsCm, chestCm = chestCm,
+                    neckCm = neckCm, bicepCm = bicepCm, thighCm = thighCm,
+                )
                     .onSuccess { LogManager.i(TAG, "Hevy sync successful for $date") }
                     .onFailure { e -> LogManager.e(TAG, "Hevy sync failed: ${e.message}", e) }
             } catch (e: Exception) {
