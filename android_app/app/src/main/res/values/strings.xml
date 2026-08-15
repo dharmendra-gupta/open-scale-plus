@@ -641,6 +641,21 @@
     <string name="settings_cloud_sync_tokens_title">Supported tokens</string>
     <string name="settings_cloud_sync_tokens_body">WEIGHT · FAT · WATER · BONE · LBM · BMI · MUSCLE · VISCERAL_FAT · DATE · TIME · TIMESTAMP · TIMEZONE\n\nCustom date/time formats: DATE_yyyy-MM-dd · TIME_HH:mm:ss\nTimezone formats: TIMEZONE_xxx (+05:30) · TIMEZONE_xx (+0530) · TIMEZONE_OOOO (GMT+05:30) · TIMEZONE_X (Z or +0530) · TIMEZONE_VV (America/New_York)\n\nUnknown tokens resolve to null. Literal string values are passed through unchanged.\n\nNote: validation flags all-uppercase values (e.g. "SUCCESS") as unknown tokens. Use lowercase or mixed-case for literal strings to avoid false-positive warnings.</string>
 
+    <string name="settings_cloud_sync_sandbox_button">Open Test Console</string>
+    <string name="settings_cloud_sync_sandbox_unsaved_draft_warning">You have unsaved changes — save them first or the test console will use the last saved config.</string>
+    <string name="settings_cloud_sync_sandbox_title">Webhook Test Console</string>
+    <string name="settings_cloud_sync_sandbox_dry_run_banner">Dry Run Mode is on — this request will be logged, not actually sent</string>
+    <string name="settings_cloud_sync_sandbox_not_configured">Configure and save a webhook URL and payload schema first</string>
+    <string name="settings_cloud_sync_sandbox_pick_measurement">Pick a measurement</string>
+    <string name="settings_cloud_sync_sandbox_no_measurements">No measurements yet</string>
+    <string name="settings_cloud_sync_sandbox_preview_button">Preview Payload</string>
+    <string name="settings_cloud_sync_sandbox_preview_error">Could not build payload: %1$s</string>
+    <string name="settings_cloud_sync_sandbox_send_button">Send Test</string>
+    <string name="settings_cloud_sync_sandbox_sending">Sending…</string>
+    <string name="settings_cloud_sync_sandbox_send_failed">Request failed: %1$s</string>
+    <string name="settings_cloud_sync_sandbox_response_title">Response</string>
+    <string name="settings_cloud_sync_sandbox_status_line">%1$d %2$s · %3$d ms</string>
+
     <string name="monday_short">Mon</string>
     <string name="tuesday_short">Tue</string>
     <string name="wednesday_short">Wed</string>

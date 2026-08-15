@@ -192,4 +192,24 @@ class WebhookSyncManagerTest {
 
         assertThat(errorCalled).isFalse()
     }
+
+    // -------------------------------------------------------------------------
+    // sendTest — direct passthrough to WebhookSyncClient, no settings lookup
+    // -------------------------------------------------------------------------
+
+    @Test
+    fun sendTest_forwardsRequestToServerAndReturnsResponse() = runTest {
+        server.enqueue(MockResponse().setResponseCode(404).setBody("not found"))
+        val client = WebhookSyncClient(OkHttpClient())
+        val manager = WebhookSyncManager(client, makeSettings(url = ""))
+
+        val url = server.url("/webhook").toString()
+        val result = manager.sendTest(url, mapOf("x-api-key" to "secret"), """{"weight":75.5}""")
+
+        val request = server.takeRequest()
+        assertThat(request.getHeader("x-api-key")).isEqualTo("secret")
+        assertThat(result.isSuccess).isTrue()
+        assertThat(result.getOrThrow().statusCode).isEqualTo(404)
+        assertThat(result.getOrThrow().body).isEqualTo("not found")
+    }
 }

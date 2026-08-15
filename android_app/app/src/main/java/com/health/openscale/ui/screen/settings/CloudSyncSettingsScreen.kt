@@ -56,6 +56,7 @@ import com.health.openscale.R
 import com.health.openscale.core.sync.webhook.WebhookPayloadBuilder
 import com.health.openscale.core.sync.webhook.SchemaValidationError
 import com.health.openscale.core.sync.webhook.ValidationErrorType
+import com.health.openscale.ui.navigation.Routes
 import com.health.openscale.ui.shared.SharedViewModel
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
@@ -222,6 +223,26 @@ fun CloudSyncSettingsScreen(
                 modifier = Modifier.padding(end = 8.dp),
             )
             Text(stringResource(R.string.settings_cloud_sync_validate_button))
+        }
+
+        Spacer(Modifier.height(8.dp))
+
+        // Test console entry point — operates on the SAVED config, so warn if
+        // there are unsaved edits rather than silently testing stale values.
+        val hasUnsavedDraft = urlDraft != webhookUrl || headersDraft != webhookAuthHeaders || schemaDraft != webhookPayloadSchema
+        Button(
+            onClick = { navController.navigate(Routes.WEBHOOK_SANDBOX) },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(stringResource(R.string.settings_cloud_sync_sandbox_button))
+        }
+        if (hasUnsavedDraft) {
+            Text(
+                text = stringResource(R.string.settings_cloud_sync_sandbox_unsaved_draft_warning),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error,
+                modifier = Modifier.padding(top = 4.dp),
+            )
         }
 
         HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
