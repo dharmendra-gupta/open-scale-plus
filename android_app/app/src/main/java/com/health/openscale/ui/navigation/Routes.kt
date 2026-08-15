@@ -56,7 +56,6 @@ object Routes {
     const val DATA_MANAGEMENT_SETTINGS = "settings/dataManagement"
     const val WEBHOOK_SETTINGS = "cloud_sync/webhook"
     const val HEVY_SETTINGS = "cloud_sync/hevy"
-    const val STRAVA_SETTINGS = "cloud_sync/strava"
     const val HEALTH_CONNECT_SETTINGS = "cloud_sync/health_connect"
     const val ABOUT_SETTINGS = "settings/about"
     const val TABLE_DRILLDOWN = "table_drilldown?start={start}&end={end}"

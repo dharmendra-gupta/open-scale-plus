@@ -43,7 +43,6 @@ import com.health.openscale.core.usecase.MeasurementSmoothingUseCases
 import com.health.openscale.core.usecase.MeasurementTransformationUseCase
 import com.health.openscale.core.sync.hevy.HevySyncManager
 import com.health.openscale.core.sync.healthconnect.HealthConnectSyncManager
-import com.health.openscale.core.sync.strava.StravaSyncManager
 import com.health.openscale.core.sync.webhook.WebhookSyncManager
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import kotlinx.coroutines.Dispatchers
@@ -87,7 +86,6 @@ class MeasurementFacade @Inject constructor(
     private val demoUseCase: MeasurementDemoUseCase,
     private val webhookSyncManager: WebhookSyncManager,
     private val hevySyncManager: HevySyncManager,
-    private val stravaSyncManager: StravaSyncManager,
     private val healthConnectSyncManager: HealthConnectSyncManager,
 ) {
 
@@ -276,22 +274,12 @@ class MeasurementFacade @Inject constructor(
         if (saved != null) {
             webhookSyncManager.fireAndForget(saved, onWebhookError)
             hevySyncManager.fireAndForget(saved)
-            stravaSyncManager.fireAndForget(saved)
             healthConnectSyncManager.fireAndForget(saved)
         }
     }
 
     suspend fun testHevyConnection(apiKey: String): Result<Unit> =
         hevySyncManager.testConnection(apiKey)
-
-    suspend fun testStravaConnection(accessToken: String): Result<Unit> =
-        stravaSyncManager.testConnection(accessToken)
-
-    suspend fun stravaExchangeCode(userId: Int, code: String): Result<Unit> =
-        stravaSyncManager.exchangeAndSaveTokens(userId, code)
-
-    suspend fun stravaDisconnect(userId: Int) =
-        stravaSyncManager.disconnectUser(userId)
 
     suspend fun deleteMeasurement(measurement: Measurement) =
         crud.deleteMeasurement(measurement)

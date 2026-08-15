@@ -39,7 +39,6 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.FitnessCenter
-import androidx.compose.material.icons.filled.DirectionsRun
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -139,13 +138,6 @@ fun CloudSyncScreen(
             title = stringResource(R.string.cloud_sync_hevy_title),
             description = stringResource(R.string.cloud_sync_hevy_desc),
             onClick = { navController.navigate(Routes.HEVY_SETTINGS) },
-        )
-
-        SyncProviderCard(
-            icon = Icons.Filled.DirectionsRun,
-            title = stringResource(R.string.cloud_sync_strava_title),
-            description = stringResource(R.string.cloud_sync_strava_desc),
-            onClick = { navController.navigate(Routes.STRAVA_SETTINGS) },
         )
 
         SyncProviderCard(

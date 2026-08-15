@@ -157,7 +157,7 @@ interface SettingsBindsModule {
 /**
  * Repository interface for accessing and managing user settings.
  */
-interface SettingsFacade : com.health.openscale.core.sync.webhook.WebhookSettings, com.health.openscale.core.sync.hevy.HevySettings, com.health.openscale.core.sync.strava.StravaSettings, com.health.openscale.core.sync.healthconnect.HealthConnectSettings {
+interface SettingsFacade : com.health.openscale.core.sync.webhook.WebhookSettings, com.health.openscale.core.sync.hevy.HevySettings, com.health.openscale.core.sync.healthconnect.HealthConnectSettings {
     // General app settings
     val isFileLoggingEnabled: Flow<Boolean>
     suspend fun setFileLoggingEnabled(enabled: Boolean)
@@ -631,25 +631,6 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setHevyApiKey(userId: Int, apiKey: String) = securePrefs.setString("hevy_api_key_user_$userId", apiKey)
     override fun hevyOverrideEnabled(userId: Int): Flow<Boolean> = observeSetting("hevy_override_user_$userId", false)
     override suspend fun setHevyOverrideEnabled(userId: Int, enabled: Boolean) = saveSetting("hevy_override_user_$userId", enabled)
-
-    override fun stravaClientId(userId: Int): Flow<String> = observeSetting("strava_client_id_user_$userId", "")
-    override suspend fun setStravaClientId(userId: Int, id: String) = saveSetting("strava_client_id_user_$userId", id)
-    override fun stravaClientSecret(userId: Int): Flow<String> = securePrefs.observeString("strava_client_secret_user_$userId", "")
-    override suspend fun setStravaClientSecret(userId: Int, secret: String) = securePrefs.setString("strava_client_secret_user_$userId", secret)
-    override fun stravaAccessToken(userId: Int): Flow<String> = securePrefs.observeString("strava_access_token_user_$userId", "")
-    override suspend fun setStravaAccessToken(userId: Int, token: String) = securePrefs.setString("strava_access_token_user_$userId", token)
-    override fun stravaRefreshToken(userId: Int): Flow<String> = securePrefs.observeString("strava_refresh_token_user_$userId", "")
-    override suspend fun setStravaRefreshToken(userId: Int, token: String) = securePrefs.setString("strava_refresh_token_user_$userId", token)
-    override fun stravaTokenExpiresAt(userId: Int): Flow<Long> = securePrefs.observeLong("strava_token_expires_at_user_$userId", 0L)
-    override suspend fun setStravaTokenExpiresAt(userId: Int, expiresAt: Long) = securePrefs.setLong("strava_token_expires_at_user_$userId", expiresAt)
-    override fun stravaAthleteName(userId: Int): Flow<String> = observeSetting("strava_athlete_name_user_$userId", "")
-    override suspend fun setStravaAthleteName(userId: Int, name: String) = saveSetting("strava_athlete_name_user_$userId", name)
-    override suspend fun clearStravaAuth(userId: Int) {
-        securePrefs.setString("strava_access_token_user_$userId", "")
-        securePrefs.setString("strava_refresh_token_user_$userId", "")
-        securePrefs.setLong("strava_token_expires_at_user_$userId", 0L)
-        setStravaAthleteName(userId, "")
-    }
 
     override fun healthConnectEnabled(userId: Int): Flow<Boolean> = observeSetting("health_connect_enabled_user_$userId", false)
     override suspend fun setHealthConnectEnabled(userId: Int, enabled: Boolean) = saveSetting("health_connect_enabled_user_$userId", enabled)
