@@ -44,6 +44,7 @@
     <string name="route_title_statistics">Statistics</string>
     <string name="route_title_insights">Insights</string>
     <string name="route_title_settings">Settings</string>
+    <string name="route_title_cloud_sync">Cloud Sync</string>
     <string name="route_title_table_drilldown">Details</string>
     <string name="calendar_week_abbrev">CW</string>
     <string name="title_new_measurement">New Measurement</string>
@@ -569,6 +570,7 @@
     <string name="settings_item_bluetooth">Bluetooth</string>
     <string name="settings_item_chart">Chart</string>
     <string name="settings_item_data_management">Data Management</string>
+    <string name="settings_item_cloud_sync">Cloud Sync</string>
     <string name="settings_item_about">About</string>
 
     <!-- General Settings Screen -->
@@ -591,6 +593,68 @@
     <string name="settings_high_contrast_label">High contrast</string>
     <string name="settings_show_overview_chart">Show chart on overview</string>
     <string name="settings_chart_scrollable">Scrollable chart</string>
+
+    <!-- Cloud Sync Settings Screen -->
+    <string name="settings_cloud_sync_title">Cloud Sync</string>
+    <string name="settings_cloud_sync_webhook_section">Webhook</string>
+    <string name="settings_cloud_sync_url_label">Webhook URL</string>
+    <string name="settings_cloud_sync_auth_headers_label">Auth Headers (JSON, optional)</string>
+    <string name="settings_cloud_sync_schema_label">Payload Schema (JSON)</string>
+    <string name="settings_cloud_sync_validate_button">Validate schema mapping</string>
+    <string name="settings_cloud_sync_schema_valid">✓ All tokens are valid</string>
+    <string name="settings_cloud_sync_schema_error">Unknown token \'%1$s\' at %2$s</string>
+    <string name="settings_cloud_sync_schema_invalid_pattern">Invalid pattern \'%1$s\' at %2$s</string>
+    <string name="settings_cloud_sync_schema_hardcoded_number">Hardcoded value \'%1$s\' at \'%2$s\' — use a token like WEIGHT to send live measurement data</string>
+    <string name="settings_cloud_sync_schema_looks_like_format">\'%1$s\' at \'%2$s\' looks like a format pattern — did you mean TIME_%1$s or DATE_%1$s?</string>
+
+    <!-- Cloud Sync provider picker -->
+    <string name="cloud_sync_section_available">Available</string>
+    <string name="cloud_sync_section_coming_soon">Coming soon</string>
+    <string name="cloud_sync_coming_soon">Coming soon</string>
+    <string name="cloud_sync_webhook_title">Custom Webhook</string>
+    <string name="cloud_sync_webhook_desc">Send measurement data to any HTTP endpoint after every save</string>
+    <string name="cloud_sync_hevy_title">Hevy</string>
+    <string name="cloud_sync_hevy_desc">Sync body composition with your Hevy workout log</string>
+    <string name="no_user_sync_warning">No user profile selected. Go to Settings → Users to create one before configuring sync.</string>
+    <string name="hevy_settings_title">Hevy Sync</string>
+    <string name="hevy_settings_pro_info">Hevy sync requires a Hevy Pro subscription. Get your API key at app.hevyapp.com → Settings → API.</string>
+    <string name="hevy_settings_api_key_label">API Key</string>
+    <string name="hevy_settings_api_key_placeholder">Paste your Hevy API key</string>
+    <string name="hevy_settings_override_label">Override existing entries</string>
+    <string name="hevy_settings_override_desc">If an entry already exists for today, update it instead of skipping</string>
+    <string name="hevy_settings_test_button">Test Connection</string>
+    <string name="hevy_settings_save_button">Save</string>
+    <string name="hevy_settings_test_success">Connection successful</string>
+    <string name="hevy_settings_test_failure">Connection failed: %1$s</string>
+    <string name="hevy_settings_saved">Settings saved</string>
+    <string name="cloud_sync_health_connect_title">Google Health Connect</string>
+    <string name="cloud_sync_health_connect_desc">Sync with Android Health Connect</string>
+    <string name="health_connect_settings_title">Health Connect</string>
+    <string name="health_connect_settings_info">Automatically writes Weight, Body Fat, Lean Body Mass, and Bone Mass to Google Health Connect after each measurement save.\n\nHealth Connect must be installed on your device.</string>
+    <string name="health_connect_settings_enable_label">Enable Health Connect sync</string>
+    <string name="health_connect_settings_enable_desc">Push measurements to Health Connect on save</string>
+    <string name="health_connect_not_installed">Health Connect is not installed on this device. Install it from the Play Store to use this feature.</string>
+    <string name="health_connect_install_button">Install Health Connect</string>
+    <string name="health_connect_permissions_denied">Health Connect permissions were not granted. Sync is disabled.</string>
+    <string name="health_connect_permissions_revoked">Health Connect permissions were revoked. Re-enable to grant them again.</string>
+    <string name="settings_cloud_sync_save_button">Save</string>
+    <string name="settings_cloud_sync_tokens_title">Supported tokens</string>
+    <string name="settings_cloud_sync_tokens_body">WEIGHT · FAT · WATER · BONE · LBM · BMI · MUSCLE · VISCERAL_FAT · DATE · TIME · TIMESTAMP · TIMEZONE\n\nCustom date/time formats: DATE_yyyy-MM-dd · TIME_HH:mm:ss\nTimezone formats: TIMEZONE_xxx (+05:30) · TIMEZONE_xx (+0530) · TIMEZONE_OOOO (GMT+05:30) · TIMEZONE_X (Z or +0530) · TIMEZONE_VV (America/New_York)\n\nUnknown tokens resolve to null. Literal string values are passed through unchanged.\n\nNote: validation flags all-uppercase values (e.g. "SUCCESS") as unknown tokens. Use lowercase or mixed-case for literal strings to avoid false-positive warnings.</string>
+
+    <string name="settings_cloud_sync_sandbox_button">Open Test Console</string>
+    <string name="settings_cloud_sync_sandbox_unsaved_draft_warning">You have unsaved changes — save them first or the test console will use the last saved config.</string>
+    <string name="settings_cloud_sync_sandbox_title">Webhook Test Console</string>
+    <string name="settings_cloud_sync_sandbox_dry_run_banner">Dry Run Mode is on — this request will be logged, not actually sent</string>
+    <string name="settings_cloud_sync_sandbox_not_configured">Configure and save a webhook URL and payload schema first</string>
+    <string name="settings_cloud_sync_sandbox_pick_measurement">Pick a measurement</string>
+    <string name="settings_cloud_sync_sandbox_no_measurements">No measurements yet</string>
+    <string name="settings_cloud_sync_sandbox_preview_button">Preview Payload</string>
+    <string name="settings_cloud_sync_sandbox_preview_error">Could not build payload: %1$s</string>
+    <string name="settings_cloud_sync_sandbox_send_button">Send Test</string>
+    <string name="settings_cloud_sync_sandbox_sending">Sending…</string>
+    <string name="settings_cloud_sync_sandbox_send_failed">Request failed: %1$s</string>
+    <string name="settings_cloud_sync_sandbox_response_title">Response</string>
+    <string name="settings_cloud_sync_sandbox_status_line">%1$d %2$s · %3$d ms</string>
 
     <string name="monday_short">Mon</string>
     <string name="tuesday_short">Tue</string>

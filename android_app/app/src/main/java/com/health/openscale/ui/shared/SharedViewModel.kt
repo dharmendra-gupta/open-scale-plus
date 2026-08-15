@@ -1,6 +1,7 @@
 /*
  * openScale
  * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ * Copyright (C) 2026 openScale+ Dharmendra Gupta
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +45,8 @@ import com.health.openscale.core.model.MeasurementInsight
 import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
+import com.health.openscale.core.sync.dryrun.SyncDryRunMode
+import com.health.openscale.core.sync.webhook.WebhookTestResponse
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
@@ -97,6 +100,7 @@ class SharedViewModel @Inject constructor(
     private val measurementFacade: MeasurementFacade,
     private val dataManagementFacade: DataManagementFacade,
     private val settingsFacade: SettingsFacade,
+    private val syncDryRunMode: SyncDryRunMode,
 ) : ViewModel(), SettingsFacade by settingsFacade {
 
     companion object {
@@ -670,12 +674,17 @@ class SharedViewModel @Inject constructor(
     fun getMeasurementById(id: Int): Flow<MeasurementWithValues?> =
         measurementFacade.getMeasurementWithValuesById(id)
 
+    fun getMeasurementsForUser(userId: Int): Flow<List<MeasurementWithValues>> =
+        measurementFacade.getMeasurementsForUser(userId)
+
     suspend fun saveMeasurement(
         measurement: Measurement,
         values: List<MeasurementValue>,
         silent: Boolean = false,
     ): Boolean = withContext(Dispatchers.IO) {
-        val result = measurementFacade.saveMeasurement(measurement, values)
+        val result = measurementFacade.saveMeasurement(measurement, values) { error ->
+            showSnackbar(message = "Webhook failed: $error")
+        }
         if (result.isSuccess) {
             if (!silent) showSnackbar(
                 messageResId = if (measurement.id == 0) R.string.success_measurement_saved
@@ -727,6 +736,22 @@ class SharedViewModel @Inject constructor(
 
     fun getPlausiblePercentRange(typeKey: MeasurementTypeKey) =
         measurementFacade.plausiblePercentRangeFor(typeKey)
+
+    suspend fun testHevyConnection(apiKey: String): Result<Unit> =
+        measurementFacade.testHevyConnection(apiKey)
+
+    suspend fun sendWebhookTest(url: String, headers: Map<String, String>, payloadJson: String): Result<WebhookTestResponse> =
+        measurementFacade.sendWebhookTest(url, headers, payloadJson)
+
+    // -------------------------------------------------------------------------
+    // Developer / dry-run
+    // -------------------------------------------------------------------------
+
+    val syncDryRunEnabled: StateFlow<Boolean> = syncDryRunMode.enabled
+    val syncDryRunLogPath: String get() = syncDryRunMode.logFile().absolutePath
+
+    fun setSyncDryRunEnabled(enabled: Boolean) = syncDryRunMode.setEnabled(enabled)
+    fun clearSyncDryRunLog() = syncDryRunMode.clearLog()
 
     fun performCsvExport(
         userId: Int,

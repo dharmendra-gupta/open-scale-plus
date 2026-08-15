@@ -157,7 +157,7 @@ interface SettingsBindsModule {
 /**
  * Repository interface for accessing and managing user settings.
  */
-interface SettingsFacade {
+interface SettingsFacade : com.health.openscale.core.sync.webhook.WebhookSettings, com.health.openscale.core.sync.hevy.HevySettings, com.health.openscale.core.sync.healthconnect.HealthConnectSettings {
     // General app settings
     val isFileLoggingEnabled: Flow<Boolean>
     suspend fun setFileLoggingEnabled(enabled: Boolean)
@@ -307,7 +307,8 @@ interface SettingsFacade {
  */
 @Singleton
 class SettingsFacadeImpl @Inject constructor(
-    private val dataStore: DataStore<Preferences>
+    private val dataStore: DataStore<Preferences>,
+    private val securePrefs: com.health.openscale.core.sync.security.EncryptedPrefsManager,
 ): SettingsFacade {
     private val TAG = "UserSettingsRepository" // Tag for logging
 
@@ -322,6 +323,7 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setFileLoggingEnabled(enabled: Boolean) {
         LogManager.d(TAG, "Setting file logging enabled to: $enabled")
         saveSetting(SettingsPreferenceKeys.IS_FILE_LOGGING_ENABLED.name, enabled)
+        LogManager.updateLoggingPreference(enabled)
     }
 
     override val isFirstAppStart: Flow<Boolean> = observeSetting(
@@ -615,6 +617,23 @@ class SettingsFacadeImpl @Inject constructor(
     override suspend fun setAutoConnectOnStartup(enabled: Boolean) {
         saveSetting(SettingsPreferenceKeys.SAVED_BLUETOOTH_AUTO_CONNECT.name, enabled)
     }
+
+    override fun webhookUrl(userId: Int): Flow<String> = observeSetting("webhook_url_user_$userId", "")
+    override suspend fun setWebhookUrl(userId: Int, url: String) = saveSetting("webhook_url_user_$userId", url)
+
+    override fun webhookAuthHeaders(userId: Int): Flow<String> = securePrefs.observeString("webhook_auth_headers_user_$userId", "")
+    override suspend fun setWebhookAuthHeaders(userId: Int, json: String) = securePrefs.setString("webhook_auth_headers_user_$userId", json)
+
+    override fun webhookPayloadSchema(userId: Int): Flow<String> = observeSetting("webhook_payload_schema_user_$userId", "")
+    override suspend fun setWebhookPayloadSchema(userId: Int, json: String) = saveSetting("webhook_payload_schema_user_$userId", json)
+
+    override fun hevyApiKey(userId: Int): Flow<String> = securePrefs.observeString("hevy_api_key_user_$userId", "")
+    override suspend fun setHevyApiKey(userId: Int, apiKey: String) = securePrefs.setString("hevy_api_key_user_$userId", apiKey)
+    override fun hevyOverrideEnabled(userId: Int): Flow<Boolean> = observeSetting("hevy_override_user_$userId", false)
+    override suspend fun setHevyOverrideEnabled(userId: Int, enabled: Boolean) = saveSetting("hevy_override_user_$userId", enabled)
+
+    override fun healthConnectEnabled(userId: Int): Flow<Boolean> = observeSetting("health_connect_enabled_user_$userId", false)
+    override suspend fun setHealthConnectEnabled(userId: Int, enabled: Boolean) = saveSetting("health_connect_enabled_user_$userId", enabled)
 
     override val isSmartAssignmentEnabled: Flow<Boolean> = observeSetting(
         SettingsPreferenceKeys.SAVED_BLUETOOTH_SMART_ASSIGNMENT_ENABLED.name,

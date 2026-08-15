@@ -6,6 +6,13 @@ on:
       - main
     tags:
       - 'v*'
+    paths-ignore:
+      - '**.md'
+      - 'docs_md/**'
+      - 'docs/**'
+      - 'fastlane/**'
+      - '.github/ISSUE_TEMPLATE/**'
+      - '.github/FUNDING.yml'
   workflow_dispatch:
 
 jobs:

@@ -1,6 +1,7 @@
 /*
  * openScale
  * Copyright (C) 2025 olie.xdev <olie.xdeveloper@googlemail.com>
+ * Copyright (C) 2026 openScale+ Dharmendra Gupta
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +22,7 @@ import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ShowChart
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.Cloud
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.QuestionMark
@@ -37,6 +39,7 @@ object Routes {
     const val TABLE = "table"
     const val STATISTICS = "statistics"
     const val INSIGHTS = "insights"
+    const val CLOUD_SYNC = "cloud_sync"
     const val SETTINGS = "settings"
 
     const val MEASUREMENT_DETAIL = "measurementDetail" // Not a main navigation item, but a route
@@ -51,6 +54,10 @@ object Routes {
     const val BLUETOOTH_DETAIL = "settings/bluetoothDetail"
     const val CHART_SETTINGS = "settings/chart"
     const val DATA_MANAGEMENT_SETTINGS = "settings/dataManagement"
+    const val WEBHOOK_SETTINGS = "cloud_sync/webhook"
+    const val WEBHOOK_SANDBOX = "cloud_sync/webhook/sandbox"
+    const val HEVY_SETTINGS = "cloud_sync/hevy"
+    const val HEALTH_CONNECT_SETTINGS = "cloud_sync/health_connect"
     const val ABOUT_SETTINGS = "settings/about"
     const val TABLE_DRILLDOWN = "table_drilldown?start={start}&end={end}"
     const val OVERVIEW_DRILLDOWN = "overview_drilldown?start={start}&end={end}"
@@ -93,6 +100,7 @@ object Routes {
         route.startsWith(TABLE) -> R.string.route_title_table
         route.startsWith(STATISTICS) -> R.string.route_title_statistics
         route.startsWith(INSIGHTS) -> R.string.route_title_insights
+        route.startsWith(CLOUD_SYNC) -> R.string.route_title_cloud_sync
         route.startsWith(SETTINGS) -> R.string.route_title_settings
         else -> NO_TITLE_RESOURCE_ID // No specific title for other routes via this function
     }
@@ -104,6 +112,7 @@ object Routes {
             TABLE -> Icons.Filled.TableRows
             STATISTICS -> Icons.Filled.Analytics
             INSIGHTS -> Icons.Filled.Lightbulb
+            CLOUD_SYNC -> Icons.Filled.Cloud
             SETTINGS -> Icons.Filled.Settings
             else -> Icons.Filled.QuestionMark // Default icon for routes not explicitly handled
         }

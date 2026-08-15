@@ -1,0 +1,18 @@
+name: PR Source Guard
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-source:
+    name: Source branch must be dev
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify PR is from dev
+        run: |
+          if [ "${{ github.head_ref }}" != "dev" ]; then
+            echo "PRs to main must come from dev. Source was: ${{ github.head_ref }}"
+            exit 1
+          fi
