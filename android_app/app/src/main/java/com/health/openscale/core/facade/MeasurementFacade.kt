@@ -44,6 +44,7 @@ import com.health.openscale.core.usecase.MeasurementTransformationUseCase
 import com.health.openscale.core.sync.hevy.HevySyncManager
 import com.health.openscale.core.sync.healthconnect.HealthConnectSyncManager
 import com.health.openscale.core.sync.webhook.WebhookSyncManager
+import com.health.openscale.core.sync.webhook.WebhookTestResponse
 import com.health.openscale.core.usecase.MeasurementTypeCrudUseCases
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -280,6 +281,9 @@ class MeasurementFacade @Inject constructor(
 
     suspend fun testHevyConnection(apiKey: String): Result<Unit> =
         hevySyncManager.testConnection(apiKey)
+
+    suspend fun sendWebhookTest(url: String, headers: Map<String, String>, payloadJson: String): Result<WebhookTestResponse> =
+        webhookSyncManager.sendTest(url, headers, payloadJson)
 
     suspend fun deleteMeasurement(measurement: Measurement) =
         crud.deleteMeasurement(measurement)

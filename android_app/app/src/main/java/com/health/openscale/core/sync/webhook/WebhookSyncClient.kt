@@ -28,12 +28,55 @@ import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
+data class WebhookTestResponse(
+    val statusCode: Int,
+    val statusMessage: String,
+    val headers: Map<String, String>,
+    val body: String,
+    val durationMs: Long,
+)
+
 @Singleton
 class WebhookSyncClient @Inject constructor(
     private val httpClient: OkHttpClient,
 ) {
     private companion object {
         const val TAG = "WebhookSyncClient"
+    }
+
+    /**
+     * Sends a webhook test request and returns the raw response as data, for the
+     * sandbox/test console. Unlike [send], a non-2xx status is NOT a failure here —
+     * seeing e.g. a 404/500 is exactly what a test console exists to show. Only a
+     * genuine I/O failure (timeout, DNS, connection refused) becomes [Result.failure].
+     */
+    suspend fun sendTest(
+        url: String,
+        headers: Map<String, String>,
+        payloadJson: String,
+    ): Result<WebhookTestResponse> = withContext(Dispatchers.IO) {
+        runCatching {
+            val body = payloadJson.toRequestBody("application/json".toMediaType())
+            val requestBuilder = Request.Builder()
+                .url(url)
+                .post(body)
+            headers.forEach { (k, v) -> requestBuilder.addHeader(k, v) }
+            val startMs = System.currentTimeMillis()
+            httpClient.newCall(requestBuilder.build()).execute().use { response ->
+                val durationMs = System.currentTimeMillis() - startMs
+                val responseBody = response.body?.string() ?: ""
+                val responseHeaders = response.headers.names()
+                    .associateWith { name -> response.headers.values(name).joinToString(", ") }
+                LogManager.i(TAG, "POST $url (test) → ${response.code} in ${durationMs}ms")
+                WebhookTestResponse(
+                    statusCode = response.code,
+                    statusMessage = response.message,
+                    headers = responseHeaders,
+                    body = responseBody,
+                    durationMs = durationMs,
+                )
+            }
+        }
     }
 
     suspend fun send(

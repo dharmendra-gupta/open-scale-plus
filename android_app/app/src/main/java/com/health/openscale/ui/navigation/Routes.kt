@@ -55,6 +55,7 @@ object Routes {
     const val CHART_SETTINGS = "settings/chart"
     const val DATA_MANAGEMENT_SETTINGS = "settings/dataManagement"
     const val WEBHOOK_SETTINGS = "cloud_sync/webhook"
+    const val WEBHOOK_SANDBOX = "cloud_sync/webhook/sandbox"
     const val HEVY_SETTINGS = "cloud_sync/hevy"
     const val HEALTH_CONNECT_SETTINGS = "cloud_sync/health_connect"
     const val ABOUT_SETTINGS = "settings/about"

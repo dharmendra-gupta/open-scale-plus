@@ -126,6 +126,7 @@ import com.health.openscale.ui.screen.settings.BluetoothDetailScreen
 import com.health.openscale.ui.screen.settings.BluetoothScreen
 import com.health.openscale.ui.screen.settings.ChartSettingsScreen
 import com.health.openscale.ui.screen.settings.CloudSyncSettingsScreen
+import com.health.openscale.ui.screen.settings.WebhookSandboxScreen
 import com.health.openscale.ui.screen.settings.HealthConnectSettingsScreen
 import com.health.openscale.ui.screen.settings.HevySettingsScreen
 import com.health.openscale.ui.screen.sync.CloudSyncScreen
@@ -810,6 +811,12 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                     }
                     composable(Routes.WEBHOOK_SETTINGS) {
                         CloudSyncSettingsScreen(
+                            navController = navController,
+                            sharedViewModel = sharedViewModel,
+                        )
+                    }
+                    composable(Routes.WEBHOOK_SANDBOX) {
+                        WebhookSandboxScreen(
                             navController = navController,
                             sharedViewModel = sharedViewModel,
                         )

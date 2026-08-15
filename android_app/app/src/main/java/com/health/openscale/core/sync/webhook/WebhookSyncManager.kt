@@ -71,4 +71,7 @@ class WebhookSyncManager @Inject constructor(
             }
         }
     }
+
+    suspend fun sendTest(url: String, headers: Map<String, String>, payloadJson: String): Result<WebhookTestResponse> =
+        client.sendTest(url, headers, payloadJson)
 }

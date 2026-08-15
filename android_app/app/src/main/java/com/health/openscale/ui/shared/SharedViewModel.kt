@@ -46,6 +46,7 @@ import com.health.openscale.core.model.MeasurementWithValues
 import com.health.openscale.core.model.UserEvaluationContext
 import com.health.openscale.core.usecase.MeasurementDemoUseCase
 import com.health.openscale.core.sync.dryrun.SyncDryRunMode
+import com.health.openscale.core.sync.webhook.WebhookTestResponse
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.screen.components.AGGREGATION_LEVEL_SUFFIX
 import com.health.openscale.ui.screen.components.CUSTOM_END_DATE_MILLIS_SUFFIX
@@ -673,6 +674,9 @@ class SharedViewModel @Inject constructor(
     fun getMeasurementById(id: Int): Flow<MeasurementWithValues?> =
         measurementFacade.getMeasurementWithValuesById(id)
 
+    fun getMeasurementsForUser(userId: Int): Flow<List<MeasurementWithValues>> =
+        measurementFacade.getMeasurementsForUser(userId)
+
     suspend fun saveMeasurement(
         measurement: Measurement,
         values: List<MeasurementValue>,
@@ -735,6 +739,9 @@ class SharedViewModel @Inject constructor(
 
     suspend fun testHevyConnection(apiKey: String): Result<Unit> =
         measurementFacade.testHevyConnection(apiKey)
+
+    suspend fun sendWebhookTest(url: String, headers: Map<String, String>, payloadJson: String): Result<WebhookTestResponse> =
+        measurementFacade.sendWebhookTest(url, headers, payloadJson)
 
     // -------------------------------------------------------------------------
     // Developer / dry-run
