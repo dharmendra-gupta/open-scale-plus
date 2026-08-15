@@ -128,7 +128,6 @@ import com.health.openscale.ui.screen.settings.ChartSettingsScreen
 import com.health.openscale.ui.screen.settings.CloudSyncSettingsScreen
 import com.health.openscale.ui.screen.settings.HealthConnectSettingsScreen
 import com.health.openscale.ui.screen.settings.HevySettingsScreen
-import com.health.openscale.ui.screen.settings.StravaSettingsScreen
 import com.health.openscale.ui.screen.sync.CloudSyncScreen
 import com.health.openscale.ui.screen.settings.DataManagementSettingsScreen
 import com.health.openscale.ui.screen.settings.GeneralSettingsScreen
@@ -817,12 +816,6 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                     }
                     composable(Routes.HEVY_SETTINGS) {
                         HevySettingsScreen(
-                            navController = navController,
-                            sharedViewModel = sharedViewModel,
-                        )
-                    }
-                    composable(Routes.STRAVA_SETTINGS) {
-                        StravaSettingsScreen(
                             navController = navController,
                             sharedViewModel = sharedViewModel,
                         )

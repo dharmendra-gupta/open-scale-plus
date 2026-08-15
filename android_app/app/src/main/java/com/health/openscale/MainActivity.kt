@@ -17,7 +17,6 @@
  */
 package com.health.openscale
 
-import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -29,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.health.openscale.core.facade.SettingsFacade
-import com.health.openscale.core.sync.strava.StravaOAuthBus
 import com.health.openscale.core.utils.LogManager
 import com.health.openscale.ui.navigation.AppNavigation
 import com.health.openscale.ui.shared.SharedViewModel
@@ -53,17 +51,7 @@ class MainActivity : ComponentActivity() {
     @Inject
     lateinit var settingsFacade: SettingsFacade
 
-    @Inject
-    lateinit var stravaOAuthBus: StravaOAuthBus
-
-    override fun onNewIntent(intent: Intent) {
-        super.onNewIntent(intent)
-        routeStravaOAuthIntent(intent)
-    }
-
     override fun onCreate(savedInstanceState: Bundle?) {
-        // Handle Strava OAuth callback delivered via deep link on cold start.
-        routeStravaOAuthIntent(intent)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
 
@@ -98,20 +86,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 AppNavigation(sharedViewModel)
-            }
-        }
-    }
-
-    private fun routeStravaOAuthIntent(intent: Intent?) {
-        val uri = intent?.data ?: return
-        if (uri.scheme == "openscale" && uri.host == "localhost") {
-            val code = uri.getQueryParameter("code")
-            val error = uri.getQueryParameter("error")
-            when {
-                code != null -> stravaOAuthBus.emit(code)
-                error != null -> stravaOAuthBus.emitError(
-                    error.replace('_', ' ').replaceFirstChar { it.uppercase() }
-                )
             }
         }
     }
