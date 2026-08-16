@@ -1,35 +1,23 @@
-> **Note:** This documentation is not fully up to date for **openScale+**. It still reflects the original openScale documentation. A full README update (name, branding, new features) is tracked in [#3](https://github.com/dharmendra-gupta/open-scale-plus/issues/3).
-
-&nbsp; <img src="https://github.com/oliexdev/openScale/blob/master/fastlane/metadata/android/en-GB/images/icon.png" alt="openScale logo" height="60"/> &nbsp;openScale [![CI](https://github.com/oliexdev/openScale/actions/workflows/ci_master.yml/badge.svg)](https://github.com/oliexdev/openScale/actions/workflows/ci_master.yml)
-[![Translation status](https://hosted.weblate.org/widgets/openscale/-/strings/svg-badge.svg)](https://hosted.weblate.org/engage/openscale/?utm_source=widget)
+&nbsp; <img src="docs/brand/icon.png" alt="openScale+ logo" height="60"/> &nbsp;openScale+ [![CI](https://github.com/dharmendra-gupta/open-scale-plus/actions/workflows/ci_pr.yml/badge.svg)](https://github.com/dharmendra-gupta/open-scale-plus/actions/workflows/ci_pr.yml)
 =========
 
-Open-source weight and body metrics tracker, with support for Bluetooth scales
-
-<a href="https://f-droid.org/repository/browse/?fdid=com.health.openscale" target="_blank">
-  <img src="https://f-droid.org/badge/get-it-on.png" alt="Get it on F-Droid" height="80"/>
-</a>
-<a href="https://play.google.com/store/apps/details?id=com.health.openscale.oss" target="_blank">
-  <img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png" alt="Get it on Google Play (Beta)" title="Beta version only" height="80"/>
-</a>
+Privacy-focused, offline-first weight and body-composition tracker with Bluetooth smart-scale support — an enhanced fork of [openScale](https://github.com/oliexdev/openScale), adding outbound cloud sync (Health Connect, Hevy, and a generic configurable webhook) on top of the original's Bluetooth scale support.
 
 > [!NOTE]
-> On [Google Play](https://play.google.com/store/apps/details?id=com.health.openscale.oss) the **openScale** version is offered as an open beta.
-> 
-> For the latest development state, install the latest [openScale dev](https://github.com/oliexdev/openScale/releases/tag/dev-build) build from the [GitHub release page](https://github.com/oliexdev/openScale/releases).
-> Please be aware that the development version, may contain bugs, and will not receive automatic updates.
+> This is a fork, not the original project. It started from [oliexdev/openScale](https://github.com/oliexdev/openScale) and has since diverged to fix a long-standing bug in the Bluetooth weight-decoding path and add outbound sync integrations. If you're looking for the original, upstream project, see the link above.
 
 # Summary :clipboard:
 
-Monitor and track your weight, BMI, body fat, body water, muscle and other body metrics in an open source app that:
+Monitor and track your weight, BMI, body fat, body water, muscle and other body metrics in an app that:
 * has an easy to use user interface with graphs,
 * supports various Bluetooth scales,
 * doesn't require you to create an account,
-* can be configured to only show the metrics you care about, and
-* respects your privacy and lets you decide what to do with your data.
+* can be configured to only show the metrics you care about,
+* respects your privacy and lets you decide what to do with your data, and
+* can optionally sync your measurements outbound to Health Connect, Hevy, or your own webhook endpoint.
 
 # Supported Bluetooth scales :rocket:
-openScale has built-in support for a number of Bluetooth (BLE or "smart") scales from  many manufacturers, e.g. Beurer, Sanitas, Yunmai, Xiaomi, etc. (see model list below). Together with our users we constantly improve and extend the set of supported scales and in many cases pick up where the original app falls short.
+openScale+ has built-in support for a number of Bluetooth (BLE or "smart") scales from many manufacturers, e.g. Beurer, Sanitas, Yunmai, Xiaomi, Dr Trust, etc. (see model list below).
 
 - Custom made Bluetooth scale
 - Beurer BF700, BF710, BF800, BF105, BF720, BF600, BF850 and BF950
@@ -47,16 +35,22 @@ openScale has built-in support for a number of Bluetooth (BLE or "smart") scales
 - Yunmai Mini and SE
 - iHealth HS3
 - Easy Home 64050
+- Dr Trust scales
 - and many more
 
-Please see [openScale wikipage](https://github.com/oliexdev/openScale/wiki/Supported-scales-in-openScale) for the full list and the level of support for each scale.
-
-For scales without Bluetooth, or Bluetooth scales not (yet) supported by openScale, measurements can be manually entered in a quick and easy way.
+For scales without Bluetooth, or Bluetooth scales not (yet) supported, measurements can be manually entered in a quick and easy way.
 
 # Supported metrics :chart_with_upwards_trend:
 Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fat, bone mass, waist circumference, waist-to-height ratio, hip circumference, waist-hip ratio, visceral fat, chest circumference, thigh circumference, biceps circumference, neck circumference, body fat caliper, BMR (basal metabolic rate), TDEE (Total Daily Energy Expenditure), Calories and custom metrics. Each entry can also have an optional comment.
 
 <b>Note:</b> don't worry if you think the list is too long: metrics you don't use can be disabled and hidden.
+
+# Cloud sync :arrows_counterclockwise:
+Sync is opt-in and outbound-only — nothing leaves your device unless you configure it.
+
+- **Health Connect** — write measurements to Android's Health Connect.
+- **Hevy** — sync weight and body-measurement data to your Hevy account.
+- **Webhook** — send measurements as JSON to any endpoint you control, with a configurable payload schema and auth headers. Includes an in-app sandbox to preview the generated payload and fire a test request before relying on it.
 
 # Other features :zap:
 - Resizable widget to show the latest measurement on the home screen
@@ -69,27 +63,20 @@ Weight, BMI (body mass index), body water, muscle, LBM (lean body mass), body fa
 - Support for multiple users
 - Support for assisted weighing (e.g. for babies or pets)
 - Support for people with amputations
-- Partially or fully translated, see [weblate project site](https://hosted.weblate.org/projects/openscale/#languages) for the full list
 - Optional dark theme selectable
 
 # Privacy :lock:
 This app has no ads and requests no unnecessary permissions. The location permission is only needed to find a Bluetooth scale. Once found the permission can be revoked (or never granted if Bluetooth isn't used).
 
-openScale doesn't send any data to a cloud and not having permission to access the internet is a strong guarantee of that.
-
-If you want to synchronize your openScale measurements with external services, you can install [openScale sync](https://github.com/oliexdev/openScale-sync).
+By default, openScale+ doesn't send any data anywhere and not having permission to access the internet unless sync is configured is a strong guarantee of that. Cloud sync (Health Connect, Hevy, webhook) is entirely opt-in and configured per destination in Settings.
 
 # Questions & Issues :thinking:
 
-Before asking, please first read the [FAQ](https://github.com/oliexdev/openScale/wiki/Frequently-Asked-Questions-(FAQ)), the [openScale wiki](https://github.com/oliexdev/openScale/wiki) and try to [find an answer](https://github.com/oliexdev/openScale/issues) in existing issues. If you still haven't found an answer, please create a [new issue](https://github.com/oliexdev/openScale/issues/new/choose) on GitHub.
+Found a bug or have a question about this fork specifically? Please open an issue on [this repository](https://github.com/dharmendra-gupta/open-scale-plus/issues).
 
 # Contributing :+1:
 
-If you found a bug, have an idea how to improve the openScale app or have a question, please create new issue or comment existing one. If you would like to contribute code, fork the repository and send a pull request.
-
-If you want to help to support your Bluetooth scale please see [How-to support a new scale](https://github.com/oliexdev/openScale/wiki/How-to-support-a-new-scale) for further information.
-
-If you want to help to translate the app in your language please see [here](https://github.com/oliexdev/openScale/wiki/Frequently-Asked-Questions-(FAQ)#why-is-my-language-xyz-is-missing-or-incomplete)
+If you found a bug, have an idea how to improve openScale+, or have a question, please open an issue or a pull request on this repository.
 
 # Screenshots :eyes:
 
@@ -135,10 +122,11 @@ If you want to help to translate the app in your language please see [here](http
 
 # License :page_facing_up:
 
-openScale is licensed under the GPL v3, see LICENSE file for full notice.
+openScale+ is licensed under the GPL v3, see LICENSE file for full notice.
 
     Copyright (C) 2025  olie.xdev <olie.xdeveloper@googlemail.com>
-    
+    Copyright (C) 2026  Dharmendra Gupta (openScale+ fork)
+
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
     the Free Software Foundation, either version 3 of the License, or

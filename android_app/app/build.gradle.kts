@@ -22,14 +22,14 @@ android {
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.health.openscale"
+        applicationId = "com.health.openscaleplus"
         minSdk = 31
         targetSdk = 36
         versionCode = 74
         versionName = "3.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        manifestPlaceholders["appName"] = "openScale"
+        manifestPlaceholders["appName"] = "openScale+"
         manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher"
         manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_round"
     }
@@ -138,7 +138,7 @@ android {
             signingConfig = signingConfigs.getByName("beta")
             applicationIdSuffix = ".beta"
             versionNameSuffix = "-beta"
-            manifestPlaceholders["appName"] = "openScale"
+            manifestPlaceholders["appName"] = "openScale+"
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_beta"
             manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_beta_round"
             buildConfigField("boolean", "ENABLE_FILE_LOGGING", "true")

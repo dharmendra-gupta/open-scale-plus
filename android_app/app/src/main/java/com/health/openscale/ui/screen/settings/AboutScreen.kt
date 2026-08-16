@@ -114,14 +114,8 @@ fun AboutScreen(
                 .padding(0.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            val launcherIconRes = when (BuildConfig.BUILD_TYPE) {
-                "beta", "oss" -> R.drawable.ic_launcher_beta_foreground
-                "debug" -> R.drawable.ic_launcher_dev_foreground
-                else -> R.drawable.ic_launcher_foreground
-            }
-
             Image(
-                painter = painterResource(id = launcherIconRes),
+                painter = painterResource(id = R.drawable.ic_launcher_foreground),
                 contentDescription = stringResource(R.string.app_logo_content_description),
                 modifier = Modifier
                     .size(128.dp)

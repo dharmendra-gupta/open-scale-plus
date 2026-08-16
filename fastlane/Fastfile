@@ -69,7 +69,7 @@ platform :android do
             build_type: "oss"
         )
         upload_to_play_store(
-            package_name: "com.health.openscale.oss",
+            package_name: "com.health.openscaleplus.oss",
             track: "production",
             metadata_path: "fastlane/metadata/android/",
             apk: "android_app/app/build/outputs/bundle/oss/openScale-#{versionName}-oss.apk"

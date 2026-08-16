@@ -46,7 +46,7 @@ class BackupWorker @AssistedInject constructor(
 ) : CoroutineWorker(appContext, workerParams) {
     companion object {
         const val TAG = "AutoBackupWorker"
-        const val WORK_NAME = "com.health.openscale.AUTO_DATABASE_BACKUP"
+        const val WORK_NAME = "com.health.openscaleplus.AUTO_DATABASE_BACKUP"
     }
 
     override suspend fun doWork(): Result {

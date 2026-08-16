@@ -1,6 +1,6 @@
 <resources>
     <!-- App & General -->
-    <string name="app_name" translatable="false">openScale</string>
+    <string name="app_name" translatable="false">openScale+</string>
     <string name="app_logo_content_description">App Logo</string>
     <string name="text_none">None</string>
     <string name="not_available">N/A</string>
