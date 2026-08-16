@@ -106,7 +106,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.health.openscale.BuildConfig
 import com.health.openscale.R
 import com.health.openscale.core.bluetooth.BluetoothEvent.UserInteractionType
 import com.health.openscale.core.data.IconResource
@@ -450,14 +449,8 @@ fun AppNavigation(sharedViewModel: SharedViewModel) {
                         .padding(8.dp)
                         .fillMaxWidth()
                 ) {
-                    val launcherIconRes = when (BuildConfig.BUILD_TYPE) {
-                        "beta", "oss" -> R.drawable.ic_launcher_beta_foreground
-                        "debug" -> R.drawable.ic_launcher_dev_foreground
-                        else -> R.drawable.ic_launcher_foreground
-                    }
-
                     Image(
-                        painter = painterResource(id = launcherIconRes),
+                        painter = painterResource(id = R.drawable.ic_launcher_foreground),
                         contentDescription = stringResource(R.string.app_logo_content_description),
                         modifier = Modifier.size(64.dp)
                     )
